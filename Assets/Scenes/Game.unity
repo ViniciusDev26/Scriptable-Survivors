@@ -462,11 +462,16 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: ScriptableSurvivors.Unity::ScriptableSurvivors.Unity.Bootstrap
   playerSpeed: 8
+  playerMaxHealth: 100
+  contactRadius: 1.2
   cameraYaw: 45
   cameraPitch: 45
   cameraDistance: 25
   cameraSize: 10
   arenaRadius: 30
+  weapon: {fileID: 11400000, guid: 155adf4ebe619856cacc8298bba81e28, type: 2}
+  projectileHeight: 1
+  hitRadius: 0.8
   enemyCatalog:
   - {fileID: 11400000, guid: 1631283c288ad430a8f86a271c6cd025, type: 2}
   spawnRadius: 25

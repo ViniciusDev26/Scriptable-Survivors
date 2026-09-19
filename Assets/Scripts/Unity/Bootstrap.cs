@@ -1,6 +1,7 @@
 using System;
 using ScriptableSurvivors.Domain;
 using UnityEngine;
+using UnityEngine.UI;
 
 // Existem dois Random no escopo. O do .NET aceita semente; o da Unity é
 // estático e global, sem semente injetável — inútil para run reproduzível.
@@ -69,6 +70,7 @@ namespace ScriptableSurvivors.Unity
 
             CreatePlayerBody(arena.Player);
             CreateProjectileFactory(arena);
+            CreateHud(arena);
 
             var spawner = CreateSpawner(arena);
             CreateRunner(arena, spawner);
@@ -106,6 +108,50 @@ namespace ScriptableSurvivors.Unity
                 PrimitiveType.Capsule, "Player", new Color(0.90f, 0.74f, 0.26f));
             body.transform.position = new Vector3(0f, 1f, 0f);
             body.AddComponent<PlayerView>().Bind(movement);
+        }
+
+        private void CreateHud(Arena arena)
+        {
+            var canvasObject = new GameObject("HUD", typeof(Canvas), typeof(CanvasScaler));
+            var canvas = canvasObject.GetComponent<Canvas>();
+            canvas.renderMode = RenderMode.ScreenSpaceOverlay;
+
+            // Sem o scaler, o texto encolheria em telas grandes e sumiria no
+            // canto durante a apresentação.
+            var scaler = canvasObject.GetComponent<CanvasScaler>();
+            scaler.uiScaleMode = CanvasScaler.ScaleMode.ScaleWithScreenSize;
+            scaler.referenceResolution = new Vector2(1920f, 1080f);
+
+            var labelObject = new GameObject("Stats", typeof(Text));
+            labelObject.transform.SetParent(canvasObject.transform, worldPositionStays: false);
+
+            var label = labelObject.GetComponent<Text>();
+            label.font = LoadBuiltinFont();
+            label.fontSize = 34;
+            label.lineSpacing = 1.2f;
+            label.color = Color.white;
+            label.alignment = TextAnchor.UpperLeft;
+            label.horizontalOverflow = HorizontalWrapMode.Overflow;
+            label.verticalOverflow = VerticalWrapMode.Overflow;
+
+            // Ancorado no canto superior esquerdo, para não depender da resolução.
+            var rect = label.rectTransform;
+            rect.anchorMin = new Vector2(0f, 1f);
+            rect.anchorMax = new Vector2(0f, 1f);
+            rect.pivot = new Vector2(0f, 1f);
+            rect.anchoredPosition = new Vector2(28f, -24f);
+            rect.sizeDelta = new Vector2(480f, 140f);
+
+            canvasObject.AddComponent<HudView>().Bind(arena, label);
+        }
+
+        private static Font LoadBuiltinFont()
+        {
+            var font = Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf");
+            if (font == null)
+                Debug.LogError("Bootstrap: fonte embutida do HUD não encontrada.");
+
+            return font;
         }
 
         /// <summary>

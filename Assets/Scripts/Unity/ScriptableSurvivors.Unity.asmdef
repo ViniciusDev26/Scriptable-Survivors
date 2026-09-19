@@ -3,7 +3,8 @@
     "rootNamespace": "ScriptableSurvivors.Unity",
     "references": [
         "ScriptableSurvivors.Domain",
-        "Unity.InputSystem"
+        "Unity.InputSystem",
+        "UnityEngine.UI"
     ],
     "includePlatforms": [],
     "excludePlatforms": [],
