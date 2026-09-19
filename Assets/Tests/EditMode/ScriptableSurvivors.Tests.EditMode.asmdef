@@ -3,6 +3,7 @@
     "rootNamespace": "ScriptableSurvivors.Tests",
     "references": [
         "ScriptableSurvivors.Domain",
+        "ScriptableSurvivors.Unity",
         "UnityEngine.TestRunner",
         "UnityEditor.TestRunner"
     ],
