@@ -77,6 +77,28 @@ WebGL. Recursos sem suporte devem ficar desligados:
 - GPU Resident Drawer — já desligado em `Assets/Settings/PC_RPAsset.asset`
 - Compute shaders, multithreading, `System.IO` em runtime
 
+## Assets binários (Git LFS)
+
+`.fbx`, `.png`, `.wav` e `.psd` passam pelo Git LFS: o repositório guarda um
+ponteiro de ~132 bytes e o binário vive em armazenamento separado. Sem isso,
+cada alteração num FBX de 3 MB gravaria 3 MB novos no histórico para sempre.
+
+**Um clone feito sem `git lfs` instalado recebe arquivos de ponteiro em vez
+dos modelos**, e a Unity falha ao importar. Em máquina nova:
+
+```bash
+git lfs install   # uma vez por máquina
+git lfs pull      # traz os binários deste repo
+```
+
+`Assets/Art/Quaternius_UltimateMonsters/` — CC0 1.0, 50 modelos com 9
+animações cada, todos compartilhando um único `Atlas_Monsters.png`. As
+subpastas `Big/`, `Blob/` e `Flying/` são obrigatórias: dez nomes de arquivo
+colidem entre categorias e são modelos diferentes.
+
+Assets não referenciados por uma cena incluída **não entram na build**. O peso
+é de repositório, não de WebGL.
+
 ## Setup local (não versionável)
 
 O `.gitattributes` declara `merge=unityyamlmerge` para `.unity`, `.prefab` e
