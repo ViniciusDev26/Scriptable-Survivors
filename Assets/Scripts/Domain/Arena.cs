@@ -16,12 +16,22 @@ namespace ScriptableSurvivors.Domain
     {
         private readonly List<Enemy> enemies = new List<Enemy>();
 
-        public PlayerMovement Player { get; }
+        public Player Player { get; }
+
+        /// <summary>Distância a partir da qual um inimigo encosta no jogador.</summary>
+        public float ContactRadius { get; }
+
         public IReadOnlyList<Enemy> Enemies => enemies;
 
-        public Arena(PlayerMovement player)
+        public bool IsOver => Player.Health.IsDead;
+
+        public Arena(Player player, float contactRadius)
         {
+            if (contactRadius <= 0f)
+                throw new ArgumentOutOfRangeException(nameof(contactRadius), contactRadius, "O raio de contato deve ser positivo.");
+
             Player = player ?? throw new ArgumentNullException(nameof(player));
+            ContactRadius = contactRadius;
         }
 
         public void Add(Enemy enemy)
@@ -37,10 +47,37 @@ namespace ScriptableSurvivors.Domain
             if (deltaTime < 0f)
                 throw new ArgumentOutOfRangeException(nameof(deltaTime), deltaTime, "deltaTime não pode ser negativo.");
 
+            if (IsOver)
+                return;
+
             Player.Move(playerInput, cameraYawDegrees, deltaTime);
 
             for (var i = 0; i < enemies.Count; i++)
                 enemies[i].MoveToward(Player.Position, deltaTime);
+
+            ResolveContacts(deltaTime);
+        }
+
+        /// <summary>
+        /// Dano é por SEGUNDO em contato, não por toque. Multiplicar pelo
+        /// deltaTime faz o estrago depender do tempo encostado, e não da taxa
+        /// de quadros — a 120 fps o jogo seria o dobro de difícil se o dano
+        /// fosse aplicado por quadro.
+        /// </summary>
+        private void ResolveContacts(float deltaTime)
+        {
+            var radiusSquared = ContactRadius * ContactRadius;
+
+            for (var i = 0; i < enemies.Count; i++)
+            {
+                var offset = enemies[i].Position - Player.Position;
+                if (offset.LengthSquared() > radiusSquared)
+                    continue;
+
+                Player.Health.TakeDamage(enemies[i].Stats.Damage * deltaTime);
+                if (IsOver)
+                    return;
+            }
         }
     }
 }

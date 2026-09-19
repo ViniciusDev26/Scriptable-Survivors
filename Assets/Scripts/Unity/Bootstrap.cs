@@ -18,6 +18,10 @@ namespace ScriptableSurvivors.Unity
     {
         [Header("Player")]
         [SerializeField, Min(0.1f)] private float playerSpeed = 8f;
+        [SerializeField, Min(1f)] private float playerMaxHealth = 100f;
+
+        [Tooltip("Distância a partir da qual um inimigo encosta e começa a machucar.")]
+        [SerializeField, Min(0.1f)] private float contactRadius = 1.2f;
 
         [Header("Camera")]
         [SerializeField] private float cameraYaw = 45f;
@@ -41,7 +45,7 @@ namespace ScriptableSurvivors.Unity
             ConfigureCamera();
             CreateGround();
 
-            var arena = new Arena(new PlayerMovement(playerSpeed));
+            var arena = new Arena(new Player(playerSpeed, playerMaxHealth), contactRadius);
             CreatePlayerBody(arena.Player);
 
             var spawner = CreateSpawner(arena);
@@ -74,7 +78,7 @@ namespace ScriptableSurvivors.Unity
             ground.transform.localScale = Vector3.one * (arenaRadius / 5f);
         }
 
-        private void CreatePlayerBody(PlayerMovement movement)
+        private void CreatePlayerBody(Player movement)
         {
             var body = RuntimePrimitives.Create(
                 PrimitiveType.Capsule, "Player", new Color(0.90f, 0.74f, 0.26f));

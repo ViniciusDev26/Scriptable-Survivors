@@ -9,9 +9,9 @@ namespace ScriptableSurvivors.Unity
     /// </summary>
     public sealed class PlayerView : MonoBehaviour
     {
-        private PlayerMovement movement;
+        private Player movement;
 
-        public void Bind(PlayerMovement playerMovement)
+        public void Bind(Player playerMovement)
         {
             movement = playerMovement;
             SyncPosition();
