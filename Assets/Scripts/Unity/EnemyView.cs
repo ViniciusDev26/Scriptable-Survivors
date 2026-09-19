@@ -19,8 +19,17 @@ namespace ScriptableSurvivors.Unity
 
         private void LateUpdate()
         {
-            if (Enemy != null)
-                SyncPosition();
+            if (Enemy == null)
+                return;
+
+            // A Arena já tirou este inimigo da simulação; resta sumir o corpo.
+            if (Enemy.Health.IsDead)
+            {
+                Destroy(gameObject);
+                return;
+            }
+
+            SyncPosition();
         }
 
         private void SyncPosition()

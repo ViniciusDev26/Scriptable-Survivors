@@ -32,6 +32,15 @@ namespace ScriptableSurvivors.Unity
         [Header("Arena")]
         [SerializeField, Min(1f)] private float arenaRadius = 30f;
 
+        [Header("Arma")]
+        [SerializeField] private WeaponData weapon;
+
+        [Tooltip("Altura em que o tiro voa. Só visual — o domínio raciocina no plano.")]
+        [SerializeField] private float projectileHeight = 1f;
+
+        [Tooltip("Distância a partir da qual um tiro acerta um inimigo.")]
+        [SerializeField, Min(0.1f)] private float hitRadius = 0.8f;
+
         [Header("Inimigos")]
         [SerializeField] private EnemyData[] enemyCatalog;
         [SerializeField, Min(1f)] private float spawnRadius = 25f;
@@ -45,8 +54,21 @@ namespace ScriptableSurvivors.Unity
             ConfigureCamera();
             CreateGround();
 
-            var arena = new Arena(new Player(playerSpeed, playerMaxHealth), contactRadius);
+            if (weapon == null)
+            {
+                Debug.LogError(
+                    "Bootstrap: nenhuma arma. Arraste um WeaponData no campo Weapon.", this);
+                return;
+            }
+
+            var arena = new Arena(
+                new Player(playerSpeed, playerMaxHealth),
+                new Weapon(weapon.ToDomain()),
+                contactRadius,
+                hitRadius);
+
             CreatePlayerBody(arena.Player);
+            CreateProjectileFactory(arena);
 
             var spawner = CreateSpawner(arena);
             CreateRunner(arena, spawner);
@@ -84,6 +106,26 @@ namespace ScriptableSurvivors.Unity
                 PrimitiveType.Capsule, "Player", new Color(0.90f, 0.74f, 0.26f));
             body.transform.position = new Vector3(0f, 1f, 0f);
             body.AddComponent<PlayerView>().Bind(movement);
+        }
+
+        /// <summary>
+        /// Assina o evento de domínio e dá corpo a cada tiro. É literalmente o
+        /// "MonoBehaviour traduz evento de domínio em visual" do projeto.
+        /// </summary>
+        private void CreateProjectileFactory(Arena arena)
+        {
+            var host = new GameObject("Projectiles");
+
+            arena.ProjectileFired += projectile =>
+            {
+                var body = weapon.ProjectilePrefab != null
+                    ? Instantiate(weapon.ProjectilePrefab)
+                    : RuntimePrimitives.Create(PrimitiveType.Sphere, "Shot", new Color(0.98f, 0.92f, 0.45f));
+
+                body.transform.localScale = Vector3.one * 0.35f;
+                body.transform.SetParent(host.transform, worldPositionStays: true);
+                body.AddComponent<ProjectileView>().Bind(projectile, projectileHeight);
+            };
         }
 
         private EnemySpawner CreateSpawner(Arena arena)

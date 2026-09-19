@@ -15,6 +15,15 @@ namespace ScriptableSurvivors.Unity
             var instance = GameObject.CreatePrimitive(type);
             instance.name = name;
             instance.GetComponent<Renderer>().sharedMaterial = CreateMaterial(color);
+
+            // A colisão é resolvida no domínio, por distância. O colisor que vem
+            // de brinde seria peso morto — e, pior, um colisor sem Rigidbody
+            // movido a cada quadro faz a Unity reconstruir a árvore de colisão
+            // estática de graça.
+            var collider = instance.GetComponent<Collider>();
+            if (collider != null)
+                Object.Destroy(collider);
+
             return instance;
         }
 
