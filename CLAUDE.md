@@ -7,6 +7,19 @@ O objetivo real é uma **apresentação ao vivo**. Decisões que enfraquecem a
 demonstração perdem para decisões que a fortalecem, mesmo quando são
 tecnicamente superiores.
 
+## Idioma
+
+**Todo código é escrito em inglês**: nomes de tipo, método, variável, campo,
+namespace, arquivo, asset e de teste. Sem exceção.
+
+**Comentários e textos ficam em PT-BR**: comentários, blocos `<summary>`,
+mensagens de exceção e mensagens de asserção dos testes. Essas mensagens
+aparecem no Test Runner durante a apresentação, que é em português — são
+documentação, não código.
+
+Mensagens de commit em PT-BR, com prefixo convencional em inglês
+(`feat:`, `chore:`, `docs:`).
+
 ## Arquitetura
 
 Três assemblies, uma seta:
