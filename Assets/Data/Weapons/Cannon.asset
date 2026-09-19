@@ -10,11 +10,11 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 4ae47faa8fdf39c919002bc15ff8833c, type: 3}
-  m_Name: Pistol
+  m_Name: Cannon
   m_EditorClassIdentifier: ScriptableSurvivors.Unity::ScriptableSurvivors.Unity.WeaponData
   projectilePrefab: {fileID: 0}
-  damage: 5
-  shotsPerSecond: 3
+  damage: 10
+  shotsPerSecond: 0.3
   projectileSpeed: 20
-  range: 12
-  splashRadius: 0
+  range: 20
+  splashRadius: 5

@@ -469,7 +469,9 @@ MonoBehaviour:
   cameraDistance: 25
   cameraSize: 10
   arenaRadius: 30
-  weapon: {fileID: 11400000, guid: 155adf4ebe619856cacc8298bba81e28, type: 2}
+  weapons:
+  - {fileID: 11400000, guid: 155adf4ebe619856cacc8298bba81e28, type: 2}
+  - {fileID: 11400000, guid: 178253912eb48f2ad838c98f64cfb881, type: 2}
   projectileHeight: 1
   hitRadius: 0.8
   enemyCatalog:
