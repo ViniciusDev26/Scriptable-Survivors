@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using ScriptableSurvivors.Domain;
 using UnityEngine;
 using UnityEngine.UI;
@@ -33,8 +34,9 @@ namespace ScriptableSurvivors.Unity
         [Header("Arena")]
         [SerializeField, Min(1f)] private float arenaRadius = 30f;
 
-        [Header("Arma")]
-        [SerializeField] private WeaponData weapon;
+        [Header("Armas")]
+        [Tooltip("Todas disparam sozinhas, cada uma com sua própria cadência.")]
+        [SerializeField] private WeaponData[] weapons;
 
         [Tooltip("Altura em que o tiro voa. Só visual — o domínio raciocina no plano.")]
         [SerializeField] private float projectileHeight = 1f;
@@ -50,21 +52,25 @@ namespace ScriptableSurvivors.Unity
         [Tooltip("0 sorteia uma semente nova a cada run. Qualquer outro valor repete a mesma run.")]
         [SerializeField] private int randomSeed;
 
+        private readonly Dictionary<Weapon, WeaponData> weaponSources =
+            new Dictionary<Weapon, WeaponData>();
+
         private void Awake()
         {
             ConfigureCamera();
             CreateGround();
 
-            if (weapon == null)
+            var loadout = BuildLoadout();
+            if (loadout.Count == 0)
             {
                 Debug.LogError(
-                    "Bootstrap: nenhuma arma. Arraste um WeaponData no campo Weapon.", this);
+                    "Bootstrap: nenhuma arma. Arraste ao menos um WeaponData no campo Weapons.", this);
                 return;
             }
 
             var arena = new Arena(
                 new Player(playerSpeed, playerMaxHealth),
-                new Weapon(weapon.ToDomain()),
+                loadout,
                 contactRadius,
                 hitRadius);
 
@@ -108,6 +114,29 @@ namespace ScriptableSurvivors.Unity
                 PrimitiveType.Capsule, "Player", new Color(0.90f, 0.74f, 0.26f));
             body.transform.position = new Vector3(0f, 1f, 0f);
             body.AddComponent<PlayerView>().Bind(movement);
+        }
+
+        /// <summary>
+        /// Constrói uma arma do domínio por asset e guarda de onde cada uma
+        /// veio, para a fábrica de projéteis achar o prefab certo depois.
+        /// </summary>
+        private List<Weapon> BuildLoadout()
+        {
+            var loadout = new List<Weapon>();
+            if (weapons == null)
+                return loadout;
+
+            foreach (var data in weapons)
+            {
+                if (data == null)
+                    continue;
+
+                var weapon = new Weapon(data.ToDomain());
+                weaponSources[weapon] = data;
+                loadout.Add(weapon);
+            }
+
+            return loadout;
         }
 
         private void CreateHud(Arena arena)
@@ -162,13 +191,23 @@ namespace ScriptableSurvivors.Unity
         {
             var host = new GameObject("Projectiles");
 
-            arena.ProjectileFired += projectile =>
+            arena.ProjectileFired += (weapon, projectile) =>
             {
-                var body = weapon.ProjectilePrefab != null
-                    ? Instantiate(weapon.ProjectilePrefab)
-                    : RuntimePrimitives.Create(PrimitiveType.Sphere, "Shot", new Color(0.98f, 0.92f, 0.45f));
+                weaponSources.TryGetValue(weapon, out var data);
+                var prefab = data != null ? data.ProjectilePrefab : null;
 
-                body.transform.localScale = Vector3.one * 0.35f;
+                // Tiro explosivo nasce maior e alaranjado, para a diferença
+                // entre as armas ser visível sem precisar de explicação.
+                var explosive = projectile.SplashRadius > 0f;
+                var body = prefab != null
+                    ? Instantiate(prefab)
+                    : RuntimePrimitives.Create(
+                        PrimitiveType.Sphere,
+                        "Shot",
+                        explosive ? new Color(0.95f, 0.55f, 0.18f) : new Color(0.98f, 0.92f, 0.45f));
+
+                var scale = explosive ? Mathf.Max(0.5f, projectile.SplashRadius * 0.45f) : 0.35f;
+                body.transform.localScale = Vector3.one * scale;
                 body.transform.SetParent(host.transform, worldPositionStays: true);
                 body.AddComponent<ProjectileView>().Bind(projectile, projectileHeight);
             };

@@ -42,7 +42,8 @@ namespace ScriptableSurvivors.Domain
                 toTarget = Vector2.UnitX;
 
             CooldownRemaining = Stats.Cooldown;
-            return new Projectile(origin, toTarget, Stats.ProjectileSpeed, Stats.Damage, Stats.Range);
+            return new Projectile(
+                origin, toTarget, Stats.ProjectileSpeed, Stats.Damage, Stats.Range, Stats.SplashRadius);
         }
     }
 }

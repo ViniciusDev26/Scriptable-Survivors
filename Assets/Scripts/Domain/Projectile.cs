@@ -17,7 +17,16 @@ namespace ScriptableSurvivors.Domain
         public float RemainingRange { get; private set; }
         public bool IsSpent { get; private set; }
 
-        public Projectile(Vector2 origin, Vector2 direction, float speed, float damage, float range)
+        /// <summary>Raio de dano em área no ponto de impacto. Zero é alvo único.</summary>
+        public float SplashRadius { get; }
+
+        public Projectile(
+            Vector2 origin,
+            Vector2 direction,
+            float speed,
+            float damage,
+            float range,
+            float splashRadius = 0f)
         {
             if (direction.LengthSquared() <= float.Epsilon)
                 throw new ArgumentException("Um projétil precisa de uma direção.", nameof(direction));
@@ -25,12 +34,15 @@ namespace ScriptableSurvivors.Domain
                 throw new ArgumentOutOfRangeException(nameof(speed), speed, "A velocidade deve ser positiva.");
             if (range <= 0f)
                 throw new ArgumentOutOfRangeException(nameof(range), range, "O alcance deve ser positivo.");
+            if (splashRadius < 0f)
+                throw new ArgumentOutOfRangeException(nameof(splashRadius), splashRadius, "O raio de explosão não pode ser negativo.");
 
             Position = origin;
             Direction = Vector2.Normalize(direction);
             Speed = speed;
             Damage = damage;
             RemainingRange = range;
+            SplashRadius = splashRadius;
         }
 
         public void Advance(float deltaTime)

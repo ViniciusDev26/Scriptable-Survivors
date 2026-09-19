@@ -27,9 +27,12 @@ namespace ScriptableSurvivors.Unity
         [Tooltip("Distância máxima do tiro, e também o alcance da mira automática.")]
         [SerializeField, Min(0.5f)] private float range = 12f;
 
+        [Tooltip("Raio de dano em área no impacto. Zero é arma de alvo único.")]
+        [SerializeField, Min(0f)] private float splashRadius;
+
         public GameObject ProjectilePrefab => projectilePrefab;
 
         public WeaponStats ToDomain() =>
-            new WeaponStats(damage, shotsPerSecond, projectileSpeed, range);
+            new WeaponStats(damage, shotsPerSecond, projectileSpeed, range, splashRadius);
     }
 }

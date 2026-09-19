@@ -23,8 +23,12 @@ namespace ScriptableSurvivors.Tests
         private static WeaponStats Pistol =>
             new WeaponStats(damage: 10f, shotsPerSecond: 2f, projectileSpeed: 20f, range: 12f);
 
+        private static WeaponStats Cannon =>
+            new WeaponStats(damage: 10f, shotsPerSecond: 1f, projectileSpeed: 15f,
+                            range: 12f, splashRadius: 3f);
+
         private static Arena Make(WeaponStats weapon, float playerSpeed = 10f, float maxHealth = 100f) =>
-            new Arena(new Player(playerSpeed, maxHealth), new Weapon(weapon),
+            new Arena(new Player(playerSpeed, maxHealth), new[] { new Weapon(weapon) },
                       contactRadius: 1.5f, hitRadius: 0.8f);
 
         private static Arena Peaceful(float playerSpeed = 10f, float maxHealth = 100f) =>
@@ -214,7 +218,7 @@ namespace ScriptableSurvivors.Tests
             var arena = Make(Pistol);
             arena.Add(new Enemy(Standing, new Vector2(0f, 5f)));
             var announced = 0;
-            arena.ProjectileFired += _ => announced++;
+            arena.ProjectileFired += (_, _) => announced++;
 
             arena.Tick(Vector2.Zero, 0f, 1f / 60f);
 
@@ -228,7 +232,7 @@ namespace ScriptableSurvivors.Tests
             var arena = Make(Pistol);
             arena.Add(new Enemy(new EnemyStats(10000f, 0f, 0f, 1), new Vector2(0f, 5f)));
             var shots = 0;
-            arena.ProjectileFired += _ => shots++;
+            arena.ProjectileFired += (_, _) => shots++;
 
             // Dois tiros por segundo, durante dois segundos.
             for (var i = 0; i < 120; i++)
@@ -272,23 +276,120 @@ namespace ScriptableSurvivors.Tests
         public void Rejects_an_arena_without_a_player()
         {
             Assert.Throws<ArgumentNullException>(
-                () => new Arena(null, new Weapon(Pistol), 1.5f, 0.8f));
+                () => new Arena(null, new[] { new Weapon(Pistol) }, 1.5f, 0.8f));
         }
 
         [Test]
-        public void Rejects_an_arena_without_a_weapon()
+        public void Rejects_an_arena_with_no_weapon_at_all()
         {
             Assert.Throws<ArgumentNullException>(
                 () => new Arena(new Player(10f, 100f), null, 1.5f, 0.8f));
+            Assert.Throws<ArgumentException>(
+                () => new Arena(new Player(10f, 100f), new Weapon[0], 1.5f, 0.8f));
         }
 
         [Test]
         public void Rejects_radii_that_make_no_sense()
         {
             Assert.Throws<ArgumentOutOfRangeException>(
-                () => new Arena(new Player(10f, 100f), new Weapon(Pistol), contactRadius: 0f, hitRadius: 0.8f));
+                () => new Arena(new Player(10f, 100f), new[] { new Weapon(Pistol) }, contactRadius: 0f, hitRadius: 0.8f));
             Assert.Throws<ArgumentOutOfRangeException>(
-                () => new Arena(new Player(10f, 100f), new Weapon(Pistol), contactRadius: 1.5f, hitRadius: 0f));
+                () => new Arena(new Player(10f, 100f), new[] { new Weapon(Pistol) }, contactRadius: 1.5f, hitRadius: 0f));
+        }
+
+        // ---------- arsenal e dano em área ----------
+
+        [Test]
+        public void Every_weapon_in_the_loadout_fires_on_its_own()
+        {
+            var arena = new Arena(
+                new Player(10f, 100f),
+                new[] { new Weapon(Pistol), new Weapon(Cannon) },
+                contactRadius: 1.5f, hitRadius: 0.8f);
+            arena.Add(new Enemy(new EnemyStats(10000f, 0f, 0f, 1), new Vector2(0f, 5f)));
+
+            arena.Tick(Vector2.Zero, 0f, 1f / 60f);
+
+            Assert.That(arena.Projectiles, Has.Count.EqualTo(2),
+                "Pistola e canhão começam prontas e disparam no mesmo quadro.");
+        }
+
+        [Test]
+        public void Each_weapon_keeps_its_own_reload()
+        {
+            var arena = new Arena(
+                new Player(10f, 100f),
+                new[] { new Weapon(Pistol), new Weapon(Cannon) },
+                contactRadius: 1.5f, hitRadius: 0.8f);
+            arena.Add(new Enemy(new EnemyStats(10000f, 0f, 0f, 1), new Vector2(0f, 5f)));
+            var byWeapon = new System.Collections.Generic.Dictionary<Weapon, int>();
+            arena.ProjectileFired += (weapon, _) =>
+                byWeapon[weapon] = byWeapon.TryGetValue(weapon, out var n) ? n + 1 : 1;
+
+            // Dois segundos: pistola 2/s, canhão 1/s.
+            for (var i = 0; i < 120; i++)
+                arena.Tick(Vector2.Zero, 0f, 1f / 60f);
+
+            var counts = new System.Collections.Generic.List<int>(byWeapon.Values);
+            counts.Sort();
+            Assert.That(counts[0], Is.EqualTo(2).Within(1), "canhão: 1 por segundo");
+            Assert.That(counts[1], Is.EqualTo(4).Within(1), "pistola: 2 por segundo");
+        }
+
+        [Test]
+        public void A_plain_shot_only_hurts_what_it_hits()
+        {
+            var arena = Make(Pistol);
+            var target = new Enemy(Frail, new Vector2(0f, 3f));
+            var bystander = new Enemy(Standing, new Vector2(1.5f, 3f));
+            arena.Add(target);
+            arena.Add(bystander);
+
+            // Só até o primeiro tiro acertar. A pistola recarrega em 0,5s (30
+            // quadros); passar disso faria ela mirar no espectador depois que o
+            // alvo cai — o que é a mira automática certa, não um vazamento de
+            // dano em área.
+            for (var i = 0; i < 20; i++)
+                arena.Tick(Vector2.Zero, 0f, 1f / 60f);
+
+            Assert.That(arena.Kills, Is.EqualTo(1));
+            Assert.That(bystander.Health.Current, Is.EqualTo(20f),
+                "A pistola tem splashRadius 0: quem está ao lado não deve sentir nada.");
+        }
+
+        [Test]
+        public void An_explosive_shot_catches_the_crowd_around_the_target()
+        {
+            var arena = Make(Cannon);
+            var target = new Enemy(Standing, new Vector2(0f, 3f));
+            var nearby = new Enemy(Standing, new Vector2(2f, 3f));
+            var faraway = new Enemy(Standing, new Vector2(9f, 3f));
+            arena.Add(target);
+            arena.Add(nearby);
+            arena.Add(faraway);
+
+            for (var i = 0; i < 60; i++)
+                arena.Tick(Vector2.Zero, 0f, 1f / 60f);
+
+            Assert.That(target.Health.Current, Is.LessThan(20f), "o alvo levou o tiro");
+            Assert.That(nearby.Health.Current, Is.LessThan(20f),
+                "estava a 2 unidades do alvo, dentro do raio 3 — devia ter sido pego");
+            Assert.That(faraway.Health.Current, Is.EqualTo(20f),
+                "estava a 9 unidades do alvo, fora do raio 3");
+        }
+
+        [Test]
+        public void One_cannon_shot_can_end_a_whole_group()
+        {
+            var arena = Make(Cannon);
+            for (var i = 0; i < 5; i++)
+                arena.Add(new Enemy(Frail, new Vector2(i * 0.5f, 3f)));
+
+            for (var i = 0; i < 60; i++)
+                arena.Tick(Vector2.Zero, 0f, 1f / 60f);
+
+            Assert.That(arena.Kills, Is.EqualTo(5),
+                "Cinco inimigos frágeis dentro do raio de explosão caem no mesmo tiro.");
         }
 
         [Test]
