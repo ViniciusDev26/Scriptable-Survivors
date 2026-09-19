@@ -1,19 +1,19 @@
+using System;
 using ScriptableSurvivors.Domain;
 using UnityEngine;
-using UnityEngine.Rendering;
 
 namespace ScriptableSurvivors.Unity
 {
     /// <summary>
     /// Composition root. É o único objeto montado à mão na cena — câmera,
-    /// chão e jogador nascem aqui, por código.
+    /// chão, jogador e spawner nascem aqui, por código.
     ///
-    /// Estes campos migram para o RunConfig (ScriptableObject) no Dia 2.
+    /// Estes campos migram para o RunConfig (ScriptableObject) no Dia 3.
     /// </summary>
     public sealed class Bootstrap : MonoBehaviour
     {
         [Header("Player")]
-        [SerializeField] private float playerSpeed = 8f;
+        [SerializeField, Min(0.1f)] private float playerSpeed = 8f;
 
         [Header("Camera")]
         [SerializeField] private float cameraYaw = 45f;
@@ -22,13 +22,23 @@ namespace ScriptableSurvivors.Unity
         [SerializeField] private float cameraSize = 10f;
 
         [Header("Arena")]
-        [SerializeField] private float arenaRadius = 30f;
+        [SerializeField, Min(1f)] private float arenaRadius = 30f;
+
+        [Header("Inimigos")]
+        [SerializeField] private EnemyData[] enemyCatalog;
+        [SerializeField, Min(1f)] private float spawnRadius = 25f;
+        [SerializeField, Min(0.05f)] private float spawnInterval = 1f;
+
+        [Tooltip("0 sorteia uma semente nova a cada run. Qualquer outro valor repete a mesma run.")]
+        [SerializeField] private int randomSeed;
 
         private void Awake()
         {
             ConfigureCamera();
             CreateGround();
-            CreatePlayer();
+
+            var player = CreatePlayer();
+            CreateSpawner(player);
         }
 
         private void ConfigureCamera()
@@ -50,40 +60,50 @@ namespace ScriptableSurvivors.Unity
 
         private void CreateGround()
         {
-            var ground = GameObject.CreatePrimitive(PrimitiveType.Plane);
-            ground.name = "Ground";
+            var ground = RuntimePrimitives.Create(
+                PrimitiveType.Plane, "Ground", new Color(0.16f, 0.18f, 0.22f));
 
             // A primitiva Plane tem 10x10 unidades na escala 1.
             ground.transform.localScale = Vector3.one * (arenaRadius / 5f);
-            ground.GetComponent<Renderer>().sharedMaterial =
-                CreateMaterial(new Color(0.16f, 0.18f, 0.22f));
         }
 
-        private void CreatePlayer()
+        private PlayerMovement CreatePlayer()
         {
-            var player = GameObject.CreatePrimitive(PrimitiveType.Capsule);
-            player.name = "Player";
-            player.transform.position = new Vector3(0f, 1f, 0f);
-            player.GetComponent<Renderer>().sharedMaterial =
-                CreateMaterial(new Color(0.90f, 0.74f, 0.26f));
+            var body = RuntimePrimitives.Create(
+                PrimitiveType.Capsule, "Player", new Color(0.90f, 0.74f, 0.26f));
+            body.transform.position = new Vector3(0f, 1f, 0f);
 
-            player.AddComponent<PlayerView>()
-                  .Bind(new PlayerMovement(playerSpeed), cameraYaw);
+            var movement = new PlayerMovement(playerSpeed);
+            body.AddComponent<PlayerView>().Bind(movement, cameraYaw);
+            return movement;
         }
 
-        /// <summary>
-        /// Primitivas criadas em runtime vêm com o material do pipeline antigo,
-        /// que a URP desenha em rosa. Este clona o material padrão do pipeline ativo.
-        /// </summary>
-        private static Material CreateMaterial(Color color)
+        private void CreateSpawner(PlayerMovement player)
         {
-            var pipeline = GraphicsSettings.currentRenderPipeline;
-            var material = pipeline != null && pipeline.defaultMaterial != null
-                ? new Material(pipeline.defaultMaterial)
-                : new Material(Shader.Find("Universal Render Pipeline/Lit"));
+            if (enemyCatalog == null || enemyCatalog.Length == 0)
+            {
+                Debug.LogWarning(
+                    "Bootstrap: catálogo de inimigos vazio — nada vai nascer. " +
+                    "Arraste um EnemyData no campo Enemy Catalog.", this);
+                return;
+            }
 
-            material.color = color;
-            return material;
+            var host = new GameObject("Enemies");
+            host.AddComponent<EnemySpawner>().Bind(
+                enemyCatalog,
+                player,
+                new SpawnRing(spawnRadius),
+                new SpawnTimer(spawnInterval),
+                CreateRandom());
+        }
+
+        private Random CreateRandom()
+        {
+            var seed = randomSeed != 0 ? randomSeed : Environment.TickCount;
+
+            // Anotada no Console para que uma run interessante possa ser repetida.
+            Debug.Log($"Semente desta run: {seed}");
+            return new Random(seed);
         }
     }
 }
