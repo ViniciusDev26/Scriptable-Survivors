@@ -83,6 +83,40 @@ não procurada — e arrastar o asset no Inspector é a tese da apresentação.
 - `Library/` é cache derivado, ignorado. Se algo parecer corrompido, apagá-la
   é seguro — a Unity reconstrói.
 
+## Verificar antes de entregar
+
+O domínio é C# puro e roda em qualquer runner .NET. Os assemblies do lado
+Unity compilam pelos `.csproj` que a Unity gera na raiz:
+
+```bash
+dotnet build ScriptableSurvivors.Domain.csproj
+dotnet build ScriptableSurvivors.Unity.csproj
+dotnet build ScriptableSurvivors.Tests.EditMode.csproj
+```
+
+**Limite:** o `.csproj` lista os arquivos que a Unity já conhece. Um `.cs`
+recém-criado só entra depois que o editor regenera — arquivo novo ainda
+precisa passar pelo editor.
+
+Erros de compilação do editor ficam em `Logs/Editor.log` na raiz do
+projeto, não em `~/.config/unity3d/Editor.log` (esse é de outra sessão):
+
+```bash
+grep -E "error CS[0-9]+" Logs/Editor.log | sort -u
+```
+
+### Armadilhas de nome
+
+`UnityEngine` colide com `System` em vários nomes. Resolva com apelido
+explícito no topo do arquivo, nunca com `using` implícito:
+
+```csharp
+using Random = System.Random;      // o da Unity é estático, sem semente
+using Numerics = System.Numerics;  // Vector2 existe nos dois
+```
+
+Outros pares que colidem: `Object`, `Debug`, `Random`.
+
 ## Plataforma
 
 WebGL. Recursos sem suporte devem ficar desligados:

@@ -1,8 +1,8 @@
-using System;
 using System.Collections.Generic;
 using ScriptableSurvivors.Domain;
 using UnityEngine;
 using Numerics = System.Numerics;
+using Random = System.Random;
 
 namespace ScriptableSurvivors.Unity
 {

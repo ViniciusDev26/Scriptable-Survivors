@@ -2,6 +2,10 @@ using System;
 using ScriptableSurvivors.Domain;
 using UnityEngine;
 
+// Existem dois Random no escopo. O do .NET aceita semente; o da Unity é
+// estático e global, sem semente injetável — inútil para run reproduzível.
+using Random = System.Random;
+
 namespace ScriptableSurvivors.Unity
 {
     /// <summary>
