@@ -4,8 +4,8 @@ using UnityEngine;
 namespace ScriptableSurvivors.Unity
 {
     /// <summary>
-    /// Adaptador de um inimigo: copia a posição que o domínio calculou para o
-    /// Transform. Espelha o PlayerView — e, como ele, não decide nada.
+    /// Desenha um inimigo na posição que o domínio calculou. Espelha o
+    /// PlayerView — e, como ele, não decide nada.
     /// </summary>
     public sealed class EnemyView : MonoBehaviour
     {
@@ -17,7 +17,7 @@ namespace ScriptableSurvivors.Unity
             SyncPosition();
         }
 
-        private void Update()
+        private void LateUpdate()
         {
             if (Enemy != null)
                 SyncPosition();

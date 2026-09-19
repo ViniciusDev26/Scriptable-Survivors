@@ -1,4 +1,3 @@
-using System.Collections.Generic;
 using ScriptableSurvivors.Domain;
 using UnityEngine;
 using Numerics = System.Numerics;
@@ -7,42 +6,40 @@ using Random = System.Random;
 namespace ScriptableSurvivors.Unity
 {
     /// <summary>
-    /// Adaptador do spawner. Pergunta ao domínio QUANDO e ONDE nascer, sorteia
-    /// um tipo do catálogo e monta o objeto visual. Nenhuma dessas contas é
-    /// feita aqui.
+    /// Adaptador do spawner. Pergunta ao domínio QUANDO e ONDE nascer,
+    /// sorteia um tipo do catálogo e monta o corpo visual.
+    ///
+    /// Não tem Update próprio: é o ArenaRunner que o chama, para a ordem
+    /// entre nascer e simular ser explícita em vez de sorteada pela Unity.
     /// </summary>
     public sealed class EnemySpawner : MonoBehaviour
     {
-        private readonly List<EnemyView> living = new List<EnemyView>();
-
         private EnemyData[] catalog;
-        private PlayerMovement player;
+        private Arena arena;
         private SpawnRing ring;
         private SpawnTimer timer;
         private Random random;
 
-        public IReadOnlyList<EnemyView> Living => living;
-
         public void Bind(
             EnemyData[] enemyCatalog,
-            PlayerMovement trackedPlayer,
+            Arena boundArena,
             SpawnRing spawnRing,
             SpawnTimer spawnTimer,
             Random rng)
         {
             catalog = enemyCatalog;
-            player = trackedPlayer;
+            arena = boundArena;
             ring = spawnRing;
             timer = spawnTimer;
             random = rng;
         }
 
-        private void Update()
+        public void Advance(float deltaTime)
         {
             if (catalog == null || catalog.Length == 0)
                 return;
 
-            var due = timer.Advance(Time.deltaTime);
+            var due = timer.Advance(deltaTime);
             for (var i = 0; i < due; i++)
                 Spawn();
         }
@@ -53,15 +50,13 @@ namespace ScriptableSurvivors.Unity
             if (data == null)
                 return;
 
-            var position = ring.NextPoint(player.Position, random);
+            var position = ring.NextPoint(arena.Player.Position, random);
             var enemy = new Enemy(data.ToDomain(), position);
+            arena.Add(enemy);
 
             var body = CreateBody(data, enemy.Position);
             body.transform.SetParent(transform, worldPositionStays: true);
-
-            var view = body.AddComponent<EnemyView>();
-            view.Bind(enemy);
-            living.Add(view);
+            body.AddComponent<EnemyView>().Bind(enemy);
         }
 
         private GameObject CreateBody(EnemyData data, Numerics.Vector2 position)

@@ -94,9 +94,12 @@ dotnet build ScriptableSurvivors.Unity.csproj
 dotnet build ScriptableSurvivors.Tests.EditMode.csproj
 ```
 
-**Limite:** o `.csproj` lista os arquivos que a Unity já conhece. Um `.cs`
-recém-criado só entra depois que o editor regenera — arquivo novo ainda
-precisa passar pelo editor.
+**Limite:** o `.csproj` lista os arquivos que a Unity já conhece, então um
+`.cs` recém-criado não entra. Para incluí-lo, copie o `.csproj` trocando os
+`<Compile Include="Assets/..." />` fixos por um glob
+`Assets/Scripts/Unity/**/*.cs`, salve como `_claudecheck.Unity.csproj`
+(`*.csproj` é ignorado pelo Git) e compile a cópia. `-getItem:Compile`
+mostra quais arquivos entraram de fato. Apague a cópia depois.
 
 Erros de compilação do editor ficam em `Logs/Editor.log` na raiz do
 projeto, não em `~/.config/unity3d/Editor.log` (esse é de outra sessão):

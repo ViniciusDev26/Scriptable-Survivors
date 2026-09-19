@@ -41,8 +41,11 @@ namespace ScriptableSurvivors.Unity
             ConfigureCamera();
             CreateGround();
 
-            var player = CreatePlayer();
-            CreateSpawner(player);
+            var arena = new Arena(new PlayerMovement(playerSpeed));
+            CreatePlayerBody(arena.Player);
+
+            var spawner = CreateSpawner(arena);
+            CreateRunner(arena, spawner);
         }
 
         private void ConfigureCamera()
@@ -71,34 +74,39 @@ namespace ScriptableSurvivors.Unity
             ground.transform.localScale = Vector3.one * (arenaRadius / 5f);
         }
 
-        private PlayerMovement CreatePlayer()
+        private void CreatePlayerBody(PlayerMovement movement)
         {
             var body = RuntimePrimitives.Create(
                 PrimitiveType.Capsule, "Player", new Color(0.90f, 0.74f, 0.26f));
             body.transform.position = new Vector3(0f, 1f, 0f);
-
-            var movement = new PlayerMovement(playerSpeed);
-            body.AddComponent<PlayerView>().Bind(movement, cameraYaw);
-            return movement;
+            body.AddComponent<PlayerView>().Bind(movement);
         }
 
-        private void CreateSpawner(PlayerMovement player)
+        private EnemySpawner CreateSpawner(Arena arena)
         {
             if (enemyCatalog == null || enemyCatalog.Length == 0)
             {
                 Debug.LogWarning(
                     "Bootstrap: catálogo de inimigos vazio — nada vai nascer. " +
                     "Arraste um EnemyData no campo Enemy Catalog.", this);
-                return;
+                return null;
             }
 
             var host = new GameObject("Enemies");
-            host.AddComponent<EnemySpawner>().Bind(
+            var spawner = host.AddComponent<EnemySpawner>();
+            spawner.Bind(
                 enemyCatalog,
-                player,
+                arena,
                 new SpawnRing(spawnRadius),
                 new SpawnTimer(spawnInterval),
                 CreateRandom());
+            return spawner;
+        }
+
+        private void CreateRunner(Arena arena, EnemySpawner spawner)
+        {
+            var host = new GameObject("ArenaRunner");
+            host.AddComponent<ArenaRunner>().Bind(arena, spawner, cameraYaw);
         }
 
         private Random CreateRandom()
