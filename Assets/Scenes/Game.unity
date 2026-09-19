@@ -467,6 +467,11 @@ MonoBehaviour:
   cameraDistance: 25
   cameraSize: 10
   arenaRadius: 30
+  enemyCatalog:
+  - {fileID: 11400000, guid: 1631283c288ad430a8f86a271c6cd025, type: 2}
+  spawnRadius: 25
+  spawnInterval: 1
+  randomSeed: 0
 --- !u!4 &1194842808
 Transform:
   m_ObjectHideFlags: 0
