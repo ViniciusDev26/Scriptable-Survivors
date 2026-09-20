@@ -20,4 +20,4 @@ MonoBehaviour:
   maxHealth: 30
   speed: 1.6
   damage: 3
-  xpReward: 11
+  xpReward: 8
