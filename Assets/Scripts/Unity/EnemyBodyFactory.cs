@@ -1,7 +1,6 @@
+using System.Collections.Generic;
 using ScriptableSurvivors.Domain;
 using ScriptableSurvivors.Domain.Enemies;
-using System;
-using System.Collections.Generic;
 using UnityEngine;
 
 namespace ScriptableSurvivors.Unity
@@ -13,74 +12,6 @@ namespace ScriptableSurvivors.Unity
     /// </summary>
     public sealed class EnemyBodyFactory : MonoBehaviour
     {
-        /// <summary>
-        /// Os FBX são importados como Legacy, então trazem um componente
-        /// Animation com os clipes prontos e sem precisar de Animator
-        /// Controller — um por modelo, já que os clipes moram dentro do arquivo.
-        ///
-        /// O ganho decisivo do Legacy aqui é o wrapMode: clipes importados não
-        /// vêm marcados como loop, e por código isso se resolve numa linha. Com
-        /// Animator seria preciso configurar os nove clipes de cada modelo.
-        /// </summary>
-        private static void StartWalking(GameObject body, EnemyData data)
-        {
-            if (string.IsNullOrWhiteSpace(data.WalkClipName))
-                return;
-
-            var animation = body.GetComponentInChildren<Animation>();
-            if (animation == null)
-                return;
-
-            var state = FindClip(animation, data.WalkClipName);
-            if (state == null)
-            {
-                Debug.LogWarning(
-                    $"{data.name}: o modelo não tem o clipe '{data.WalkClipName}'. " +
-                    $"Disponíveis: {ListClips(animation)}", data);
-                return;
-            }
-
-            // O wrapMode precisa ir no ESTADO, não no componente: o do
-            // componente só vale como padrão para estados criados depois, e os
-            // do importador já existem. Sem isto o clipe toca uma vez e congela
-            // na última pose — o monstro anda alguns passos e volta a deslizar.
-            state.wrapMode = WrapMode.Loop;
-            animation.wrapMode = WrapMode.Loop;
-            animation.Play(state.name);
-        }
-
-        /// <summary>
-        /// Aceita tanto o nome cru quanto o prefixado pela armadura. O Blender
-        /// exporta os clipes como "CharacterArmature|Walk", e exigir isso no
-        /// Inspector seria uma pegadinha esperando o próximo modelo.
-        /// </summary>
-        private static AnimationState FindClip(Animation animation, string wanted)
-        {
-            var exact = animation[wanted];
-            if (exact != null)
-                return exact;
-
-            foreach (AnimationState state in animation)
-            {
-                var bar = state.name.LastIndexOf('|');
-                var tail = bar >= 0 ? state.name.Substring(bar + 1) : state.name;
-
-                if (string.Equals(tail, wanted, StringComparison.OrdinalIgnoreCase))
-                    return state;
-            }
-
-            return null;
-        }
-
-        private static string ListClips(Animation animation)
-        {
-            var names = new List<string>();
-            foreach (AnimationState state in animation)
-                names.Add(state.name);
-
-            return names.Count == 0 ? "nenhum" : string.Join(", ", names);
-        }
-
         private readonly Dictionary<string, EnemyData> catalog = new Dictionary<string, EnemyData>();
         private Material primitiveMaterial;
 
@@ -100,11 +31,9 @@ namespace ScriptableSurvivors.Unity
         private void GiveBody(Enemy enemy)
         {
             catalog.TryGetValue(enemy.Stats.Id, out var data);
-
-            // Enquanto o campo Prefab estiver vazio, uma cápsula serve. No Dia 4
-            // basta arrastar um modelo do Quaternius no asset — sem tocar aqui.
             var usingModel = data != null && data.Prefab != null;
 
+            // Enquanto o campo Prefab estiver vazio, uma cápsula serve.
             var body = usingModel
                 ? Instantiate(data.Prefab)
                 : RuntimePrimitives.Create(
@@ -116,10 +45,16 @@ namespace ScriptableSurvivors.Unity
             var height = usingModel ? 0f : 1f;
 
             if (usingModel)
+            {
                 body.transform.localScale = Vector3.one * data.ModelScale;
 
-            if (usingModel)
-                StartWalking(body, data);
+                var clips = body.GetComponentInChildren<Animation>();
+                if (clips != null)
+                {
+                    body.AddComponent<EnemyAnimator>()
+                        .Bind(enemy, clips, data.WalkClipName, data.HitClipName);
+                }
+            }
 
             body.name = enemy.Stats.Id;
             body.transform.position = new Vector3(enemy.Position.X, height, enemy.Position.Y);

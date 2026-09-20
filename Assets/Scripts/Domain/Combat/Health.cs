@@ -13,6 +13,15 @@ namespace ScriptableSurvivors.Domain.Combat
 
         public bool IsDead => Current <= 0f;
 
+        /// <summary>
+        /// Disparado quando dano é efetivamente aplicado, com o quanto foi
+        /// tirado de fato. Golpe em quem já morreu não dispara nada.
+        ///
+        /// É o evento que o corpo escuta para se contorcer — mesmo desenho
+        /// de ProjectileFired e EnemySpawned.
+        /// </summary>
+        public event Action<float> Damaged;
+
         public Health(float max)
         {
             if (max <= 0f)
@@ -27,7 +36,12 @@ namespace ScriptableSurvivors.Domain.Combat
             if (amount < 0f)
                 throw new ArgumentOutOfRangeException(nameof(amount), amount, "Dano não pode ser negativo.");
 
+            var before = Current;
             Current = Math.Max(0f, Current - amount);
+
+            var applied = before - Current;
+            if (applied > 0f)
+                Damaged?.Invoke(applied);
         }
 
         /// <summary>

@@ -75,5 +75,56 @@ namespace ScriptableSurvivors.Tests
 
             Assert.Throws<ArgumentOutOfRangeException>(() => health.TakeDamage(-5f));
         }
+
+        [Test]
+        public void Announces_the_damage_it_took()
+        {
+            var health = new Health(100f);
+            var announced = 0f;
+            health.Damaged += amount => announced += amount;
+
+            health.TakeDamage(30f);
+
+            Assert.That(announced, Is.EqualTo(30f),
+                "É este aviso que faz o corpo se contorcer na tela.");
+        }
+
+        [Test]
+        public void Announces_only_what_was_actually_taken()
+        {
+            var health = new Health(10f);
+            var announced = 0f;
+            health.Damaged += amount => announced += amount;
+
+            health.TakeDamage(999f);
+
+            Assert.That(announced, Is.EqualTo(10f),
+                "Sobrou dano, mas só 10 foram tirados.");
+        }
+
+        [Test]
+        public void Hitting_a_corpse_announces_nothing()
+        {
+            var health = new Health(10f);
+            health.TakeDamage(10f);
+            var announced = 0;
+            health.Damaged += _ => announced++;
+
+            health.TakeDamage(50f);
+
+            Assert.That(announced, Is.Zero);
+        }
+
+        [Test]
+        public void Zero_damage_announces_nothing()
+        {
+            var health = new Health(100f);
+            var announced = 0;
+            health.Damaged += _ => announced++;
+
+            health.TakeDamage(0f);
+
+            Assert.That(announced, Is.Zero);
+        }
     }
 }
