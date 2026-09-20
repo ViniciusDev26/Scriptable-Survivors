@@ -30,13 +30,19 @@ namespace ScriptableSurvivors.Unity
             if (animation == null)
                 return;
 
-            if (animation.GetClip(data.WalkClipName) == null)
+            var state = animation[data.WalkClipName];
+            if (state == null)
             {
                 Debug.LogWarning(
                     $"{data.name}: o modelo não tem o clipe '{data.WalkClipName}'.", data);
                 return;
             }
 
+            // O wrapMode precisa ir no ESTADO, não no componente: o do
+            // componente só vale como padrão para estados criados depois, e os
+            // do importador já existem. Sem isto o clipe toca uma vez e congela
+            // na última pose — o monstro anda alguns passos e volta a deslizar.
+            state.wrapMode = WrapMode.Loop;
             animation.wrapMode = WrapMode.Loop;
             animation.Play(data.WalkClipName);
         }
