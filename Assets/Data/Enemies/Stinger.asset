@@ -1,0 +1,23 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: acddc0b210ec45f16a0038b5e9cbaf5f, type: 3}
+  m_Name: Stinger
+  m_EditorClassIdentifier: ScriptableSurvivors.Unity::ScriptableSurvivors.Unity.EnemyData
+  prefab: {fileID: 919132149155446097, guid: bd6a7fca74c614c3c83e5f9d95373f1b, type: 3}
+  modelScale: 1
+  bodyHeight: 1.4
+  walkClipName: Fast_Flying
+  hitClipName: HitReact
+  maxHealth: 8
+  speed: 3.0
+  damage: 2
+  xpReward: 12

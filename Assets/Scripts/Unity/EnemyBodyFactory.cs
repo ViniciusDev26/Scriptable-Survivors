@@ -40,9 +40,9 @@ namespace ScriptableSurvivors.Unity
                     PrimitiveType.Capsule, enemy.Stats.Id, new Color(0.78f, 0.27f, 0.30f), primitiveMaterial);
 
             // A cápsula tem pivô no centro e mede 2 de altura, então nasce em
-            // y = 1 para a base encostar no chão. Modelo tem pivô nos pés — em
-            // y = 1 ele flutuaria.
-            var height = usingModel ? 0f : 1f;
+            // y = 1 para a base encostar no chão. Modelo tem pivô nos pés, e a
+            // altura vem do catálogo — zero para quem anda, maior para voadores.
+            var height = usingModel ? data.BodyHeight : 1f;
 
             if (usingModel)
             {

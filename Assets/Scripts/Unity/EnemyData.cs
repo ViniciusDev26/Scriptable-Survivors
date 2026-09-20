@@ -21,6 +21,10 @@ namespace ScriptableSurvivors.Unity
                + "alcance e colisão continuam vindo dos números acima.")]
         [SerializeField, Min(0.01f)] private float modelScale = 1f;
 
+        [Tooltip("Altura em que o corpo fica. Zero encosta no chão; use maior "
+               + "para voadores. Só visual — a colisão é por distância no plano.")]
+        [SerializeField, Min(0f)] private float bodyHeight;
+
         [Tooltip("Clipe tocado em loop enquanto o inimigo se move. Os modelos do "
                + "Quaternius trazem Walk, Run, Idle, Jump, Bite_Front, Death, "
                + "Dance e HitRecieve. Vazio não anima.")]
@@ -39,6 +43,7 @@ namespace ScriptableSurvivors.Unity
 
         public GameObject Prefab => prefab;
         public float ModelScale => modelScale;
+        public float BodyHeight => bodyHeight;
         public string WalkClipName => walkClipName;
         public string HitClipName => hitClipName;
 

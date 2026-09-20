@@ -19,6 +19,11 @@ MonoBehaviour:
   - {fileID: 11400000, guid: 178253912eb48f2ad838c98f64cfb881, type: 2}
   enemies:
   - {fileID: 11400000, guid: 1631283c288ad430a8f86a271c6cd025, type: 2}
+  - {fileID: 11400000, guid: 3dd6ebf5031a400fb7b2a64fbccd4746, type: 2}
+  - {fileID: 11400000, guid: c295da3511ba40f49b3bb9e20678f505, type: 2}
+  - {fileID: 11400000, guid: 846cd8fc47f04b2caa0e792e15a4cfdc, type: 2}
+  - {fileID: 11400000, guid: 70c99d2650404479b6c2164f2108407b, type: 2}
+  - {fileID: 11400000, guid: 4d84f84f9c6347af9ae366d4d526da31, type: 2}
   spawnRadius: 25
   spawnInterval: 1
   upgradePool:
