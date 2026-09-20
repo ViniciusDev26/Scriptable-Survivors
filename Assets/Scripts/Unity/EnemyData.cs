@@ -21,6 +21,11 @@ namespace ScriptableSurvivors.Unity
                + "alcance e colisão continuam vindo dos números acima.")]
         [SerializeField, Min(0.01f)] private float modelScale = 1f;
 
+        [Tooltip("Clipe tocado em loop enquanto o inimigo se move. Os modelos do "
+               + "Quaternius trazem Walk, Run, Idle, Jump, Bite_Front, Death, "
+               + "Dance e HitRecieve. Vazio não anima.")]
+        [SerializeField] private string walkClipName = "Walk";
+
         [Header("Atributos")]
         [SerializeField, Min(0.1f)] private float maxHealth = 10f;
         [SerializeField, Min(0f)] private float speed = 2.5f;
@@ -29,6 +34,7 @@ namespace ScriptableSurvivors.Unity
 
         public GameObject Prefab => prefab;
         public float ModelScale => modelScale;
+        public string WalkClipName => walkClipName;
 
         /// <summary>
         /// A fronteira. Devolve uma cópia dos valores; o domínio nunca recebe

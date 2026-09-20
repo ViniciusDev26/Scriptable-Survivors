@@ -12,6 +12,35 @@ namespace ScriptableSurvivors.Unity
     /// </summary>
     public sealed class EnemyBodyFactory : MonoBehaviour
     {
+        /// <summary>
+        /// Os FBX são importados como Legacy, então trazem um componente
+        /// Animation com os clipes prontos e sem precisar de Animator
+        /// Controller — um por modelo, já que os clipes moram dentro do arquivo.
+        ///
+        /// O ganho decisivo do Legacy aqui é o wrapMode: clipes importados não
+        /// vêm marcados como loop, e por código isso se resolve numa linha. Com
+        /// Animator seria preciso configurar os nove clipes de cada modelo.
+        /// </summary>
+        private static void StartWalking(GameObject body, EnemyData data)
+        {
+            if (string.IsNullOrWhiteSpace(data.WalkClipName))
+                return;
+
+            var animation = body.GetComponentInChildren<Animation>();
+            if (animation == null)
+                return;
+
+            if (animation.GetClip(data.WalkClipName) == null)
+            {
+                Debug.LogWarning(
+                    $"{data.name}: o modelo não tem o clipe '{data.WalkClipName}'.", data);
+                return;
+            }
+
+            animation.wrapMode = WrapMode.Loop;
+            animation.Play(data.WalkClipName);
+        }
+
         private readonly Dictionary<string, EnemyData> catalog = new Dictionary<string, EnemyData>();
         private Material primitiveMaterial;
 
@@ -48,6 +77,9 @@ namespace ScriptableSurvivors.Unity
 
             if (usingModel)
                 body.transform.localScale = Vector3.one * data.ModelScale;
+
+            if (usingModel)
+                StartWalking(body, data);
 
             body.name = enemy.Stats.Id;
             body.transform.position = new Vector3(enemy.Position.X, height, enemy.Position.Y);
