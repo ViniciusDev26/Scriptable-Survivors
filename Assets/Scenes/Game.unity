@@ -475,6 +475,10 @@ MonoBehaviour:
   - {fileID: 11400000, guid: 178253912eb48f2ad838c98f64cfb881, type: 2}
   projectileHeight: 1
   hitRadius: 0.8
+  upgradePool:
+  - {fileID: 11400000, guid: 90b84d607740db885af3c85d66af19fe, type: 2}
+  - {fileID: 11400000, guid: 56aebb5db3977630d83a7e8fe070bfee, type: 2}
+  - {fileID: 11400000, guid: 6309a814e384504f4aa21df4635cf770, type: 2}
   enemyCatalog:
   - {fileID: 11400000, guid: 1631283c288ad430a8f86a271c6cd025, type: 2}
   spawnRadius: 25

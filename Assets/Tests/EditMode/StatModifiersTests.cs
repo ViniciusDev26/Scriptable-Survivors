@@ -88,5 +88,43 @@ namespace ScriptableSurvivors.Tests
             Assert.That(stats.Range, Is.GreaterThan(0f),
                 "Uma combinação ruim de upgrades não pode derrubar a run com exceção.");
         }
+
+        [Test]
+        public void Lists_the_stats_the_upgrades_touched()
+        {
+            var modifiers = new StatModifiers();
+            modifiers.Add(Percent(StatKind.WeaponDamage, 0.3f));
+            modifiers.Add(Percent(StatKind.PlayerSpeed, 0.2f));
+
+            Assert.That(modifiers.ActiveStats,
+                Is.EqualTo(new[] { StatKind.WeaponDamage, StatKind.PlayerSpeed }),
+                "Na ordem em que foram escolhidos, que é como a HUD lista.");
+        }
+
+        [Test]
+        public void The_same_stat_twice_is_listed_once()
+        {
+            var modifiers = new StatModifiers();
+            modifiers.Add(Percent(StatKind.WeaponDamage, 0.3f));
+            modifiers.Add(Percent(StatKind.WeaponDamage, 0.3f));
+            modifiers.Add(Flat(StatKind.WeaponDamage, 5f));
+
+            Assert.That(modifiers.ActiveStats, Has.Count.EqualTo(1),
+                "Três upgrades de dano são uma linha na HUD, não três.");
+            Assert.That(modifiers.PercentOn(StatKind.WeaponDamage), Is.EqualTo(0.6f).Within(0.001f));
+            Assert.That(modifiers.FlatOn(StatKind.WeaponDamage), Is.EqualTo(5f));
+        }
+
+        [Test]
+        public void Version_marks_every_change()
+        {
+            var modifiers = new StatModifiers();
+            var before = modifiers.Version;
+
+            modifiers.Add(Percent(StatKind.WeaponDamage, 0.3f));
+
+            Assert.That(modifiers.Version, Is.GreaterThan(before),
+                "É por isto que a HUD sabe quando remontar o texto.");
+        }
     }
 }

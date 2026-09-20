@@ -16,12 +16,30 @@ namespace ScriptableSurvivors.Domain
     {
         private readonly Dictionary<StatKind, float> flat = new Dictionary<StatKind, float>();
         private readonly Dictionary<StatKind, float> percent = new Dictionary<StatKind, float>();
+        private readonly List<StatKind> touched = new List<StatKind>();
+
+        /// <summary>
+        /// Os stats que algum upgrade encostou, na ordem em que foram escolhidos.
+        /// É o que a HUD lista como bônus ativos.
+        /// </summary>
+        public IReadOnlyList<StatKind> ActiveStats => touched;
+
+        /// <summary>
+        /// Sobe a cada upgrade aplicado. A HUD usa para saber que precisa
+        /// remontar o texto, em vez de refazê-lo todo quadro.
+        /// </summary>
+        public int Version { get; private set; }
 
         public void Add(Upgrade upgrade)
         {
             var bucket = upgrade.Kind == ModifierKind.Flat ? flat : percent;
             bucket.TryGetValue(upgrade.Stat, out var accumulated);
             bucket[upgrade.Stat] = accumulated + upgrade.Value;
+
+            if (!touched.Contains(upgrade.Stat))
+                touched.Add(upgrade.Stat);
+
+            Version++;
         }
 
         public float FlatOn(StatKind stat) =>

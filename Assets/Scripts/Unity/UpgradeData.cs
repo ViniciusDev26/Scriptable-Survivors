@@ -43,28 +43,7 @@ namespace ScriptableSurvivors.Unity
         /// legível. Na demonstração ao vivo isso significa preencher um campo
         /// em vez de três — menos digitação na frente da plateia é menos risco.
         /// </summary>
-        private string Describe()
-        {
-            var amount = kind == ModifierKind.Percent
-                ? value.ToString("+0%;-0%")
-                : value.ToString("+0.##;-0.##");
-
-            return $"{amount} {Label(stat)}";
-        }
-
-        private static string Label(StatKind stat)
-        {
-            switch (stat)
-            {
-                case StatKind.WeaponDamage: return "de dano";
-                case StatKind.WeaponFireRate: return "de cadência";
-                case StatKind.WeaponRange: return "de alcance";
-                case StatKind.WeaponProjectileSpeed: return "de velocidade do projétil";
-                case StatKind.WeaponSplashRadius: return "de raio de explosão";
-                case StatKind.PlayerSpeed: return "de velocidade";
-                case StatKind.PlayerMaxHealth: return "de vida máxima";
-                default: return stat.ToString();
-            }
-        }
+        private string Describe() =>
+            $"{StatLabels.Amount(kind, value)} de {StatLabels.For(stat)}";
     }
 }
