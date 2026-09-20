@@ -1,5 +1,6 @@
 using ScriptableSurvivors.Domain;
 using ScriptableSurvivors.Domain.Enemies;
+using System;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -30,11 +31,12 @@ namespace ScriptableSurvivors.Unity
             if (animation == null)
                 return;
 
-            var state = animation[data.WalkClipName];
+            var state = FindClip(animation, data.WalkClipName);
             if (state == null)
             {
                 Debug.LogWarning(
-                    $"{data.name}: o modelo não tem o clipe '{data.WalkClipName}'.", data);
+                    $"{data.name}: o modelo não tem o clipe '{data.WalkClipName}'. " +
+                    $"Disponíveis: {ListClips(animation)}", data);
                 return;
             }
 
@@ -44,7 +46,39 @@ namespace ScriptableSurvivors.Unity
             // na última pose — o monstro anda alguns passos e volta a deslizar.
             state.wrapMode = WrapMode.Loop;
             animation.wrapMode = WrapMode.Loop;
-            animation.Play(data.WalkClipName);
+            animation.Play(state.name);
+        }
+
+        /// <summary>
+        /// Aceita tanto o nome cru quanto o prefixado pela armadura. O Blender
+        /// exporta os clipes como "CharacterArmature|Walk", e exigir isso no
+        /// Inspector seria uma pegadinha esperando o próximo modelo.
+        /// </summary>
+        private static AnimationState FindClip(Animation animation, string wanted)
+        {
+            var exact = animation[wanted];
+            if (exact != null)
+                return exact;
+
+            foreach (AnimationState state in animation)
+            {
+                var bar = state.name.LastIndexOf('|');
+                var tail = bar >= 0 ? state.name.Substring(bar + 1) : state.name;
+
+                if (string.Equals(tail, wanted, StringComparison.OrdinalIgnoreCase))
+                    return state;
+            }
+
+            return null;
+        }
+
+        private static string ListClips(Animation animation)
+        {
+            var names = new List<string>();
+            foreach (AnimationState state in animation)
+                names.Add(state.name);
+
+            return names.Count == 0 ? "nenhum" : string.Join(", ", names);
         }
 
         private readonly Dictionary<string, EnemyData> catalog = new Dictionary<string, EnemyData>();
