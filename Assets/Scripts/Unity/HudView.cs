@@ -29,6 +29,7 @@ namespace ScriptableSurvivors.Unity
         private int lastLevel = -1;
         private int lastXp = -1;
         private int lastModifierVersion = -1;
+        private int lastWaveLine = -1;
 
         public void Bind(Arena boundArena, Text boundLabel)
         {
@@ -51,13 +52,22 @@ namespace ScriptableSurvivors.Unity
             var xp = arena.Xp.Current;
             var modifierVersion = arena.Modifiers.Version;
 
+            // A onda muda de número e o relógio conta em segundos inteiros, então
+            // basta remontar quando um deles vira.
+            var waveLine = arena.Waves == null
+                ? 0
+                : (arena.Waves.Number * 1000)
+                  + Mathf.CeilToInt(Mathf.Max(0f, arena.Waves.Remaining))
+                  + (arena.Waves.IsResting ? 500000 : 0);
+
             // Remontar a string todo quadro geraria lixo para o coletor à toa,
             // e em WebGL isso aparece como engasgo.
             if (kills == lastKills
                 && health == lastHealth
                 && level == lastLevel
                 && xp == lastXp
-                && modifierVersion == lastModifierVersion)
+                && modifierVersion == lastModifierVersion
+                && waveLine == lastWaveLine)
                 return;
 
             lastKills = kills;
@@ -65,6 +75,7 @@ namespace ScriptableSurvivors.Unity
             lastLevel = level;
             lastXp = xp;
             lastModifierVersion = modifierVersion;
+            lastWaveLine = waveLine;
 
             text.Clear();
             text.Append("ABATES  ").Append(kills).Append('\n');
@@ -73,9 +84,32 @@ namespace ScriptableSurvivors.Unity
             text.Append("NÍVEL   ").Append(level)
                 .Append("   (").Append(xp).Append('/').Append(arena.Xp.Required).Append(')');
 
+            AppendWave();
+
             AppendBonuses();
 
             label.text = text.ToString();
+        }
+
+        private void AppendWave()
+        {
+            var waves = arena.Waves;
+            if (waves == null)
+                return;
+
+            var seconds = Mathf.CeilToInt(Mathf.Max(0f, waves.Remaining));
+
+            text.Append('\n');
+
+            if (waves.IsResting)
+            {
+                text.Append("ONDA    ").Append(waves.Number + 1)
+                    .Append(" em ").Append(seconds).Append('s');
+                return;
+            }
+
+            text.Append("ONDA    ").Append(waves.Number)
+                .Append("   (").Append(seconds).Append("s)");
         }
 
         private void AppendBonuses()

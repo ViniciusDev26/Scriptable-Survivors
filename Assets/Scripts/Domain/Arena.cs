@@ -31,6 +31,9 @@ namespace ScriptableSurvivors.Domain
 
         private readonly EnemySpawn spawn;
 
+        /// <summary>O ritmo da run em ondas. Nulo em testes que não a exercitam.</summary>
+        public WaveSchedule Waves { get; }
+
         /// <summary>Todas disparam sozinhas, cada uma com seu próprio recarregamento.</summary>
         public IReadOnlyList<Weapon> Weapons => weapons;
 
@@ -75,7 +78,8 @@ namespace ScriptableSurvivors.Domain
             float contactRadius,
             float hitRadius,
             Experience experience = null,
-            EnemySpawn enemySpawn = null)
+            EnemySpawn enemySpawn = null,
+            WaveSchedule waves = null)
         {
             if (loadout == null)
                 throw new ArgumentNullException(nameof(loadout));
@@ -88,6 +92,7 @@ namespace ScriptableSurvivors.Domain
             Player.BindModifiers(Modifiers);
             Xp = experience ?? new Experience();
             spawn = enemySpawn;
+            Waves = waves;
             ContactRadius = contactRadius;
             HitRadius = hitRadius;
 
@@ -152,10 +157,10 @@ namespace ScriptableSurvivors.Domain
         /// </summary>
         private void SpawnEnemies(float deltaTime)
         {
-            if (spawn == null)
+            if (spawn == null || Waves == null)
                 return;
 
-            var due = spawn.Advance(deltaTime);
+            var due = Waves.Advance(deltaTime, enemies.Count);
             for (var i = 0; i < due; i++)
             {
                 var enemy = spawn.Create(Player.Position);

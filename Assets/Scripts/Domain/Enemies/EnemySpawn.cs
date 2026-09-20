@@ -5,7 +5,8 @@ using System.Numerics;
 namespace ScriptableSurvivors.Domain.Enemies
 {
     /// <summary>
-    /// De onde vêm os inimigos: o catálogo, o relógio e o círculo, juntos.
+    /// De onde vêm os inimigos: o catálogo e o círculo. QUANDO nascem é da
+    /// WaveSchedule — aqui só se responde quem e onde.
     ///
     /// Isto vive dentro da Arena, e não no adaptador, porque nascer é parte da
     /// simulação. Se ficasse do lado da Unity, o spawner continuaria trabalhando
@@ -16,10 +17,9 @@ namespace ScriptableSurvivors.Domain.Enemies
     {
         private readonly List<EnemyStats> catalog;
         private readonly SpawnRing ring;
-        private readonly SpawnTimer timer;
         private readonly Random random;
 
-        public EnemySpawn(IEnumerable<EnemyStats> enemyCatalog, SpawnRing spawnRing, SpawnTimer spawnTimer, Random rng)
+        public EnemySpawn(IEnumerable<EnemyStats> enemyCatalog, SpawnRing spawnRing, Random rng)
         {
             if (enemyCatalog == null)
                 throw new ArgumentNullException(nameof(enemyCatalog));
@@ -29,11 +29,8 @@ namespace ScriptableSurvivors.Domain.Enemies
                 throw new ArgumentException("O catálogo de inimigos não pode estar vazio.", nameof(enemyCatalog));
 
             ring = spawnRing ?? throw new ArgumentNullException(nameof(spawnRing));
-            timer = spawnTimer ?? throw new ArgumentNullException(nameof(spawnTimer));
             random = rng ?? throw new ArgumentNullException(nameof(rng));
         }
-
-        public int Advance(float deltaTime) => timer.Advance(deltaTime);
 
         public Enemy Create(Vector2 center)
         {

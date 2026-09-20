@@ -523,22 +523,26 @@ namespace ScriptableSurvivors.Tests
 
         // ---------- nascimento dentro da simulação ----------
 
-        private static EnemySpawn EverySecond(float radius = 25f) =>
+        private static EnemySpawn Slimes(float radius = 25f) =>
             new EnemySpawn(
                 new[] { new EnemyStats(20f, 0f, 5f, 1, "slime") },
                 new SpawnRing(radius),
-                new SpawnTimer(1f),
                 new System.Random(1));
+
+        /// <summary>Uma onda que produz um inimigo por segundo.</summary>
+        private static WaveSchedule OnePerSecond() =>
+            new WaveSchedule(firstWaveSize: 10, growth: 5, waveDuration: 30f,
+                             spawnWindow: 10f, intermission: 5f);
 
         private static Arena WithSpawn(WeaponStats weapon, EnemySpawn spawn) =>
             new Arena(new Player(10f, 100f), new[] { new Weapon(weapon) },
                       contactRadius: 1.5f, hitRadius: 0.8f,
-                      experience: null, enemySpawn: spawn);
+                      experience: null, enemySpawn: spawn, waves: OnePerSecond());
 
         [Test]
         public void Enemies_are_born_inside_the_tick()
         {
-            var arena = WithSpawn(Unarmed, EverySecond());
+            var arena = WithSpawn(Unarmed, Slimes());
 
             arena.Tick(Vector2.Zero, 0f, 1f);
 
@@ -548,7 +552,7 @@ namespace ScriptableSurvivors.Tests
         [Test]
         public void Every_birth_is_announced()
         {
-            var arena = WithSpawn(Unarmed, EverySecond());
+            var arena = WithSpawn(Unarmed, Slimes());
             var announced = 0;
             arena.EnemySpawned += _ => announced++;
 
@@ -561,7 +565,7 @@ namespace ScriptableSurvivors.Tests
         [Test]
         public void Nobody_is_born_while_a_card_is_owed()
         {
-            var arena = WithSpawn(Pistol, EverySecond());
+            var arena = WithSpawn(Pistol, Slimes());
             arena.Add(new Enemy(Frail, new Vector2(0f, 3f)));
             for (var i = 0; i < 20; i++)
                 arena.Tick(Vector2.Zero, 0f, 1f / 60f);
@@ -579,7 +583,7 @@ namespace ScriptableSurvivors.Tests
         public void Nobody_is_born_after_the_run_ends()
         {
             var arena = new Arena(new Player(10f, maxHealth: 4f), new[] { new Weapon(Unarmed) },
-                                  1.5f, 0.8f, null, EverySecond());
+                                  1.5f, 0.8f, null, Slimes(), OnePerSecond());
             arena.Add(new Enemy(Standing, Vector2.Zero));
             arena.Tick(Vector2.Zero, 0f, 1f);
             Assume.That(arena.IsOver, Is.True);
@@ -593,7 +597,7 @@ namespace ScriptableSurvivors.Tests
         [Test]
         public void The_newborn_carries_the_catalog_identity()
         {
-            var arena = WithSpawn(Unarmed, EverySecond());
+            var arena = WithSpawn(Unarmed, Slimes());
 
             arena.Tick(Vector2.Zero, 0f, 1f);
 
@@ -604,7 +608,7 @@ namespace ScriptableSurvivors.Tests
         [Test]
         public void Births_happen_around_the_player_not_around_the_origin()
         {
-            var arena = WithSpawn(Unarmed, EverySecond(radius: 25f));
+            var arena = WithSpawn(Unarmed, Slimes(radius: 25f));
             arena.Tick(D, 0f, 1f);
 
             var born = arena.Enemies[0];

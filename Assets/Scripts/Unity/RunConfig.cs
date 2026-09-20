@@ -1,3 +1,4 @@
+using ScriptableSurvivors.Domain.Enemies;
 using ScriptableSurvivors.Domain.Players;
 using ScriptableSurvivors.Domain.Progression;
 using System.Collections.Generic;
@@ -32,8 +33,22 @@ namespace ScriptableSurvivors.Unity
         [SerializeField] private EnemyData[] enemies;
         [SerializeField, Min(1f)] private float spawnRadius = 25f;
 
-        [Tooltip("Segundos entre nascimentos.")]
-        [SerializeField, Min(0.05f)] private float spawnInterval = 1f;
+        [Header("Ondas")]
+        [Tooltip("Tamanho da primeira onda.")]
+        [SerializeField, Min(1)] private int firstWaveSize = 10;
+
+        [Tooltip("Quantos inimigos a mais por onda.")]
+        [SerializeField, Min(0)] private int waveGrowth = 5;
+
+        [Tooltip("Limite da onda. Esgotado, a próxima começa mesmo com inimigos vivos.")]
+        [SerializeField, Min(1f)] private float waveDuration = 30f;
+
+        [Tooltip("Janela em que a cota inteira nasce, contada do início da onda. "
+               + "É também o tempo mínimo que uma onda pode durar.")]
+        [SerializeField, Min(0.5f)] private float spawnWindow = 15f;
+
+        [Tooltip("Respiro entre uma onda e a seguinte.")]
+        [SerializeField, Min(0f)] private float waveIntermission = 5f;
 
         [Header("Progressão")]
         [Tooltip("O monte de cartas. Criar um upgrade novo é criar um asset e arrastar aqui.")]
@@ -63,11 +78,13 @@ namespace ScriptableSurvivors.Unity
         public float ContactRadius => contactRadius;
         public float HitRadius => hitRadius;
         public float SpawnRadius => spawnRadius;
-        public float SpawnInterval => spawnInterval;
 
         public Player CreatePlayer() => new Player(playerSpeed, playerMaxHealth);
 
         public Experience CreateExperience() => new Experience(firstLevelCost, costIncrease);
+
+        public WaveSchedule CreateWaves() =>
+            new WaveSchedule(firstWaveSize, waveGrowth, waveDuration, spawnWindow, waveIntermission);
 
         /// <summary>
         /// A semente é anotada no Console para que uma run interessante possa

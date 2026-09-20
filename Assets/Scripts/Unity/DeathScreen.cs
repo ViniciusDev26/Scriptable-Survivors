@@ -48,7 +48,10 @@ namespace ScriptableSurvivors.Unity
             var minutes = Mathf.FloorToInt(arena.Elapsed / 60f);
             var seconds = Mathf.FloorToInt(arena.Elapsed % 60f);
 
+            var waves = arena.Waves == null ? string.Empty : $"ONDAS    {arena.Waves.Number}\n";
+
             summary.text =
+                waves +
                 $"TEMPO    {minutes}:{seconds:00}\n" +
                 $"ABATES   {arena.Kills}\n" +
                 $"NÍVEL    {arena.Xp.Level}";

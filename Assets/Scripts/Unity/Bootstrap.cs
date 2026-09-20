@@ -40,6 +40,10 @@ namespace ScriptableSurvivors.Unity
         private readonly Dictionary<Weapon, WeaponData> weaponSources =
             new Dictionary<Weapon, WeaponData>();
 
+        /// <summary>Uma semente por run, compartilhada. Duas sorteariam runs diferentes
+        /// no mesmo jogo, e o Console registraria dois números.</summary>
+        private System.Random random;
+
         private void Awake()
         {
             if (config == null)
@@ -56,6 +60,8 @@ namespace ScriptableSurvivors.Unity
                     "no campo Primitive Material.", this);
                 return;
             }
+
+            random = config.CreateRandom();
 
             var loadout = BuildLoadout();
             if (loadout.Count == 0)
@@ -74,7 +80,8 @@ namespace ScriptableSurvivors.Unity
                 config.ContactRadius,
                 config.HitRadius,
                 config.CreateExperience(),
-                BuildEnemySpawn());
+                BuildEnemySpawn(),
+                config.CreateWaves());
 
             CreatePlayerBody(arena.Player);
             CreateProjectileFactory(arena);
@@ -160,11 +167,7 @@ namespace ScriptableSurvivors.Unity
                 return null;
             }
 
-            return new EnemySpawn(
-                stats,
-                new SpawnRing(config.SpawnRadius),
-                new SpawnTimer(config.SpawnInterval),
-                config.CreateRandom());
+            return new EnemySpawn(stats, new SpawnRing(config.SpawnRadius), random);
         }
 
         private void CreateEnemyBodyFactory(Arena arena)
@@ -265,7 +268,7 @@ namespace ScriptableSurvivors.Unity
 
             var host = new GameObject("UpgradeScreen");
             host.AddComponent<UpgradeScreen>().Bind(
-                arena, new UpgradePool(upgrades), config.CreateRandom(),
+                arena, new UpgradePool(upgrades), random,
                 config.UpgradePool, font, canvas);
         }
 
