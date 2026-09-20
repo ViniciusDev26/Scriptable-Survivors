@@ -1,0 +1,41 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 71ccfdfff11f0665187400d5de3051ae, type: 3}
+  m_Name: DefaultRun
+  m_EditorClassIdentifier: ScriptableSurvivors.Unity::ScriptableSurvivors.Unity.RunConfig
+  playerSpeed: 8
+  playerMaxHealth: 100
+  weapons:
+  - {fileID: 11400000, guid: 155adf4ebe619856cacc8298bba81e28, type: 2}
+  - {fileID: 11400000, guid: 178253912eb48f2ad838c98f64cfb881, type: 2}
+  enemies:
+  - {fileID: 11400000, guid: 1631283c288ad430a8f86a271c6cd025, type: 2}
+  spawnRadius: 25
+  spawnInterval: 1
+  upgradePool:
+  - {fileID: 11400000, guid: 90b84d607740db885af3c85d66af19fe, type: 2}
+  - {fileID: 11400000, guid: 56aebb5db3977630d83a7e8fe070bfee, type: 2}
+  - {fileID: 11400000, guid: 6309a814e384504f4aa21df4635cf770, type: 2}
+  - {fileID: 11400000, guid: 90240e52aed74484882eaf9a059ea069, type: 2}
+  - {fileID: 11400000, guid: 9a5931d1770d402fba190e204054f655, type: 2}
+  - {fileID: 11400000, guid: 9e09cda705bd4e58958ba6fbbfb6e5ee, type: 2}
+  - {fileID: 11400000, guid: 2eab5f6342a947539e38567565e9c73c, type: 2}
+  - {fileID: 11400000, guid: b89b7061af374f05ac20ba16658b2b49, type: 2}
+  - {fileID: 11400000, guid: 334d13d32a8a480184575a0b60904bb6, type: 2}
+  - {fileID: 11400000, guid: 5d06b8775a0a4a55a44c46b523ccfe21, type: 2}
+  - {fileID: 11400000, guid: 9db0b36e5dc145a190662bb8bca0c560, type: 2}
+  - {fileID: 11400000, guid: 572f63922b844adc820e2ebd43369545, type: 2}
+  firstLevelCost: 5
+  costIncrease: 3
+  contactRadius: 1.2
+  hitRadius: 0.8
+  randomSeed: 0
