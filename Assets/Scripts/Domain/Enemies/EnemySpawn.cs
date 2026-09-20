@@ -2,7 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Numerics;
 
-namespace ScriptableSurvivors.Domain
+namespace ScriptableSurvivors.Domain.Enemies
 {
     /// <summary>
     /// De onde vêm os inimigos: o catálogo, o relógio e o círculo, juntos.

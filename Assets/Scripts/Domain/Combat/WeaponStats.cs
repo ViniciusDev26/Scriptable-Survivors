@@ -1,6 +1,6 @@
 using System;
 
-namespace ScriptableSurvivors.Domain
+namespace ScriptableSurvivors.Domain.Combat
 {
     /// <summary>
     /// Os números de uma arma, já fora da Unity. Como EnemyStats, é um retrato

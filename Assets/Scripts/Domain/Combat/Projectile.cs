@@ -1,7 +1,7 @@
 using System;
 using System.Numerics;
 
-namespace ScriptableSurvivors.Domain
+namespace ScriptableSurvivors.Domain.Combat
 {
     /// <summary>
     /// Um tiro em voo. Guarda quanto alcance ainda lhe resta em vez de por

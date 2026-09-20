@@ -1,5 +1,6 @@
+using ScriptableSurvivors.Domain.Players;
+using ScriptableSurvivors.Domain.Progression;
 using System.Collections.Generic;
-using ScriptableSurvivors.Domain;
 using UnityEngine;
 using Random = System.Random;
 

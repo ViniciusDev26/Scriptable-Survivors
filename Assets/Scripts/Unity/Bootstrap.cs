@@ -1,5 +1,9 @@
-using System.Collections.Generic;
 using ScriptableSurvivors.Domain;
+using ScriptableSurvivors.Domain.Combat;
+using ScriptableSurvivors.Domain.Enemies;
+using ScriptableSurvivors.Domain.Players;
+using ScriptableSurvivors.Domain.Progression;
+using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
 

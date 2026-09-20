@@ -1,7 +1,7 @@
 using System;
 using System.Numerics;
 
-namespace ScriptableSurvivors.Domain
+namespace ScriptableSurvivors.Domain.Players
 {
     /// <summary>
     /// Converte input de tela em direção no plano do chão.

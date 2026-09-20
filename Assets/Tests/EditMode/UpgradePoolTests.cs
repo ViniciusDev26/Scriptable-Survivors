@@ -1,7 +1,7 @@
+using ScriptableSurvivors.Domain.Progression;
 using System;
 using System.Collections.Generic;
 using NUnit.Framework;
-using ScriptableSurvivors.Domain;
 
 namespace ScriptableSurvivors.Tests
 {

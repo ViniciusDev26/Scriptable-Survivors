@@ -1,6 +1,6 @@
 using System;
 
-namespace ScriptableSurvivors.Domain
+namespace ScriptableSurvivors.Domain.Progression
 {
     /// <summary>
     /// Um upgrade, já fora da Unity. Nome, descrição e ícone ficam no asset —

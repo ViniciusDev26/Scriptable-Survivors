@@ -1,6 +1,10 @@
 using System;
 using System.Collections.Generic;
 using System.Numerics;
+using ScriptableSurvivors.Domain.Combat;
+using ScriptableSurvivors.Domain.Enemies;
+using ScriptableSurvivors.Domain.Players;
+using ScriptableSurvivors.Domain.Progression;
 
 namespace ScriptableSurvivors.Domain
 {

@@ -1,7 +1,9 @@
 using System;
 using System.Numerics;
+using ScriptableSurvivors.Domain.Combat;
+using ScriptableSurvivors.Domain.Progression;
 
-namespace ScriptableSurvivors.Domain
+namespace ScriptableSurvivors.Domain.Players
 {
     /// <summary>
     /// O jogador: onde está e quanta vida ainda tem. A posição é estado da

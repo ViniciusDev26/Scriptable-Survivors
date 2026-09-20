@@ -1,6 +1,6 @@
 using System;
 
-namespace ScriptableSurvivors.Domain
+namespace ScriptableSurvivors.Domain.Enemies
 {
     /// <summary>
     /// Conta o tempo entre nascimentos e diz quantos inimigos devem nascer

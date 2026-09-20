@@ -1,6 +1,6 @@
+using ScriptableSurvivors.Domain.Players;
 using System.Numerics;
 using NUnit.Framework;
-using ScriptableSurvivors.Domain;
 
 namespace ScriptableSurvivors.Tests
 {

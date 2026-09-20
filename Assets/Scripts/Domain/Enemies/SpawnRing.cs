@@ -1,7 +1,7 @@
 using System;
 using System.Numerics;
 
-namespace ScriptableSurvivors.Domain
+namespace ScriptableSurvivors.Domain.Enemies
 {
     /// <summary>
     /// O círculo onde os inimigos nascem, sempre fora do enquadramento da

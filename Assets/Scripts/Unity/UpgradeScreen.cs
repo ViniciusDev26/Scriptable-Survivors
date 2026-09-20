@@ -1,5 +1,6 @@
-using System.Collections.Generic;
 using ScriptableSurvivors.Domain;
+using ScriptableSurvivors.Domain.Progression;
+using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.InputSystem;
 using UnityEngine.UI;

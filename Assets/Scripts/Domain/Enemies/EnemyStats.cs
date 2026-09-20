@@ -1,6 +1,7 @@
 using System;
+using ScriptableSurvivors.Domain.Combat;
 
-namespace ScriptableSurvivors.Domain
+namespace ScriptableSurvivors.Domain.Enemies
 {
     /// <summary>
     /// Os números de um tipo de inimigo, já fora da Unity. É um retrato

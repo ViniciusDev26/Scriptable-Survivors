@@ -1,6 +1,6 @@
+using ScriptableSurvivors.Domain.Progression;
 using System;
 using NUnit.Framework;
-using ScriptableSurvivors.Domain;
 
 namespace ScriptableSurvivors.Tests
 {

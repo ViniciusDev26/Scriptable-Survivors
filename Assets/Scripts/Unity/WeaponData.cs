@@ -1,4 +1,4 @@
-using ScriptableSurvivors.Domain;
+using ScriptableSurvivors.Domain.Combat;
 using UnityEngine;
 
 namespace ScriptableSurvivors.Unity

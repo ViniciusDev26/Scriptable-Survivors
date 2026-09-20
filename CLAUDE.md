@@ -30,6 +30,28 @@ Três assemblies, uma seta:
 
 ### `Assets/Scripts/Domain` — as regras
 
+Dividido em contextos, um por pasta e por namespace. As dependências entre
+eles formam um grafo acíclico, e os `using` no topo de cada arquivo são a
+prova disso:
+
+    Progression  →  (nada)         Experience, Upgrade, UpgradePool,
+                                   StatKind, StatModifiers
+    Combat       →  Progression    Health, Weapon, WeaponStats, Projectile
+    Enemies      →  Combat         Enemy, EnemyStats, EnemySpawn,
+                                   SpawnRing, SpawnTimer
+    Players      →  Combat,        Player, PlanarInput
+                    Progression
+    Arena        →  todos          a raiz da simulação
+
+**Nada em Progression pode conhecer arma, inimigo ou jogador.** Foi a
+tentação que criou o ciclo original: `StatModifiers.ApplyTo(WeaponStats)`
+punha conhecimento de arma dentro de uma pilha genérica. Hoje isso é um
+método de extensão em `Combat/WeaponStatsModifiers.cs`, do lado de quem
+sabe o que é uma arma.
+
+Namespaces no plural (`Players`, `Enemies`) para não colidirem com os tipos
+que contêm.
+
 - `noEngineReferences: true`. **`using UnityEngine` não compila aqui.**
 - C# puro: dano, XP, nível, sorteio de upgrades, curva de spawn.
 - Proibido: `MonoBehaviour`, `ScriptableObject`, `Vector3`, `Time.deltaTime`,

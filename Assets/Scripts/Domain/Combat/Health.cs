@@ -1,6 +1,6 @@
 using System;
 
-namespace ScriptableSurvivors.Domain
+namespace ScriptableSurvivors.Domain.Combat
 {
     /// <summary>
     /// Vida de uma entidade viva. Cada inimigo em cena tem a sua — o valor

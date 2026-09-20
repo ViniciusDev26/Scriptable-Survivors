@@ -1,4 +1,4 @@
-using ScriptableSurvivors.Domain;
+using ScriptableSurvivors.Domain.Progression;
 using UnityEngine;
 
 namespace ScriptableSurvivors.Unity

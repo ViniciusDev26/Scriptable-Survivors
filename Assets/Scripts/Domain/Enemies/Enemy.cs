@@ -1,7 +1,8 @@
 using System;
 using System.Numerics;
+using ScriptableSurvivors.Domain.Combat;
 
-namespace ScriptableSurvivors.Domain
+namespace ScriptableSurvivors.Domain.Enemies
 {
     /// <summary>
     /// Um inimigo vivo na arena. Os números vêm do catálogo e são

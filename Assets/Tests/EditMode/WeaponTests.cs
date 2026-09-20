@@ -1,7 +1,7 @@
+using ScriptableSurvivors.Domain.Combat;
 using System;
 using System.Numerics;
 using NUnit.Framework;
-using ScriptableSurvivors.Domain;
 
 namespace ScriptableSurvivors.Tests
 {

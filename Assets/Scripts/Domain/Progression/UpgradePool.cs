@@ -1,7 +1,7 @@
 using System;
 using System.Collections.Generic;
 
-namespace ScriptableSurvivors.Domain
+namespace ScriptableSurvivors.Domain.Progression
 {
     /// <summary>
     /// O monte de upgrades da run. Sortear as cartas é regra de jogo, não

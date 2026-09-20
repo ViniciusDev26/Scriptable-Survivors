@@ -1,5 +1,6 @@
+using ScriptableSurvivors.Domain.Combat;
+using ScriptableSurvivors.Domain.Progression;
 using NUnit.Framework;
-using ScriptableSurvivors.Domain;
 
 namespace ScriptableSurvivors.Tests
 {

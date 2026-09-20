@@ -1,5 +1,7 @@
-using System.Text;
 using ScriptableSurvivors.Domain;
+using ScriptableSurvivors.Domain.Combat;
+using ScriptableSurvivors.Domain.Players;
+using System.Text;
 using UnityEngine;
 using UnityEngine.UI;
 

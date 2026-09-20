@@ -1,6 +1,6 @@
 using System;
 
-namespace ScriptableSurvivors.Domain
+namespace ScriptableSurvivors.Domain.Progression
 {
     /// <summary>
     /// XP e nível da run. Guarda os níveis pendentes em vez de disparar um

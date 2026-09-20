@@ -1,6 +1,6 @@
 using System.Collections.Generic;
 
-namespace ScriptableSurvivors.Domain
+namespace ScriptableSurvivors.Domain.Progression
 {
     /// <summary>
     /// A pilha de modificadores de uma run. Os números do catálogo ficam
@@ -50,22 +50,5 @@ namespace ScriptableSurvivors.Domain
 
         public float Apply(StatKind stat, float baseValue) =>
             (baseValue + FlatOn(stat)) * (1f + PercentOn(stat));
-
-        /// <summary>
-        /// Os limites existem para que combinações estranhas de upgrades não
-        /// produzam uma arma impossível — cadência zero, alcance negativo — e
-        /// derrubem a run com exceção no meio da apresentação.
-        /// </summary>
-        public WeaponStats ApplyTo(WeaponStats baseStats)
-        {
-            return new WeaponStats(
-                damage: Max(Apply(StatKind.WeaponDamage, baseStats.Damage), 0f),
-                shotsPerSecond: Max(Apply(StatKind.WeaponFireRate, baseStats.ShotsPerSecond), 0.05f),
-                projectileSpeed: Max(Apply(StatKind.WeaponProjectileSpeed, baseStats.ProjectileSpeed), 0.1f),
-                range: Max(Apply(StatKind.WeaponRange, baseStats.Range), 0.5f),
-                splashRadius: Max(Apply(StatKind.WeaponSplashRadius, baseStats.SplashRadius), 0f));
-        }
-
-        private static float Max(float value, float floor) => value < floor ? floor : value;
     }
 }

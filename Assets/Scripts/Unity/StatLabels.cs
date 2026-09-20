@@ -1,5 +1,5 @@
+using ScriptableSurvivors.Domain.Progression;
 using System.Text;
-using ScriptableSurvivors.Domain;
 
 namespace ScriptableSurvivors.Unity
 {

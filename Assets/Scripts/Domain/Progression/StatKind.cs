@@ -1,4 +1,4 @@
-namespace ScriptableSurvivors.Domain
+namespace ScriptableSurvivors.Domain.Progression
 {
     /// <summary>Qual número um upgrade altera.</summary>
     public enum StatKind

@@ -1,5 +1,6 @@
-using System.Collections.Generic;
 using ScriptableSurvivors.Domain;
+using ScriptableSurvivors.Domain.Enemies;
+using System.Collections.Generic;
 using UnityEngine;
 
 namespace ScriptableSurvivors.Unity

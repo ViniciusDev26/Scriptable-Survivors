@@ -1,7 +1,8 @@
 using System;
 using System.Numerics;
+using ScriptableSurvivors.Domain.Progression;
 
-namespace ScriptableSurvivors.Domain
+namespace ScriptableSurvivors.Domain.Combat
 {
     /// <summary>
     /// A arma que o jogador carrega. Sabe atirar e esperar; não sabe em quem —
