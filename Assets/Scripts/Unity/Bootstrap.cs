@@ -1,70 +1,50 @@
-using System;
 using System.Collections.Generic;
 using ScriptableSurvivors.Domain;
 using UnityEngine;
 using UnityEngine.UI;
 
-// Existem dois Random no escopo. O do .NET aceita semente; o da Unity é
-// estático e global, sem semente injetável — inútil para run reproduzível.
-using Random = System.Random;
-
 namespace ScriptableSurvivors.Unity
 {
     /// <summary>
     /// Composition root. É o único objeto montado à mão na cena — câmera,
-    /// chão, jogador e spawner nascem aqui, por código.
+    /// chão, jogador, inimigos e interface nascem aqui, por código.
     ///
-    /// Estes campos migram para o RunConfig (ScriptableObject) no Dia 3.
+    /// As regras da partida vêm todas de um RunConfig. O que sobrou neste
+    /// componente é apresentação: enquadramento, material e tamanho do chão.
     /// </summary>
     public sealed class Bootstrap : MonoBehaviour
     {
-        [Header("Player")]
-        [SerializeField, Min(0.1f)] private float playerSpeed = 8f;
-        [SerializeField, Min(1f)] private float playerMaxHealth = 100f;
-
-        [Tooltip("Distância a partir da qual um inimigo encosta e começa a machucar.")]
-        [SerializeField, Min(0.1f)] private float contactRadius = 1.2f;
-
-        [Header("Camera")]
-        [SerializeField] private float cameraYaw = 45f;
-        [SerializeField] private float cameraPitch = 45f;
-        [SerializeField] private float cameraDistance = 25f;
-        [SerializeField] private float cameraSize = 10f;
+        [Header("Partida")]
+        [Tooltip("Trocar este asset troca a run inteira, sem recompilar nada.")]
+        [SerializeField] private RunConfig config;
 
         [Header("Visual")]
-        [Tooltip("Material base das primitivas. Precisa ser um asset: shader sem\nreferência é descartado da build e vira magenta.")]
+        [Tooltip("Material base das primitivas. Precisa ser um asset: shader sem referência é descartado da build e vira magenta.")]
         [SerializeField] private Material primitiveMaterial;
-
-        [Header("Arena")]
-        [SerializeField, Min(1f)] private float arenaRadius = 30f;
-
-        [Header("Armas")]
-        [Tooltip("Todas disparam sozinhas, cada uma com sua própria cadência.")]
-        [SerializeField] private WeaponData[] weapons;
 
         [Tooltip("Altura em que o tiro voa. Só visual — o domínio raciocina no plano.")]
         [SerializeField] private float projectileHeight = 1f;
 
-        [Tooltip("Distância a partir da qual um tiro acerta um inimigo.")]
-        [SerializeField, Min(0.1f)] private float hitRadius = 0.8f;
+        [SerializeField, Min(1f)] private float groundRadius = 30f;
 
-        [Header("Upgrades")]
-        [Tooltip("O monte de cartas da run. Criar um upgrade novo é criar um asset e arrastar aqui.")]
-        [SerializeField] private UpgradeData[] upgradePool;
-
-        [Header("Inimigos")]
-        [SerializeField] private EnemyData[] enemyCatalog;
-        [SerializeField, Min(1f)] private float spawnRadius = 25f;
-        [SerializeField, Min(0.05f)] private float spawnInterval = 1f;
-
-        [Tooltip("0 sorteia uma semente nova a cada run. Qualquer outro valor repete a mesma run.")]
-        [SerializeField] private int randomSeed;
+        [Header("Câmera")]
+        [SerializeField] private float cameraYaw = 45f;
+        [SerializeField] private float cameraPitch = 45f;
+        [SerializeField] private float cameraDistance = 25f;
+        [SerializeField] private float cameraSize = 10f;
 
         private readonly Dictionary<Weapon, WeaponData> weaponSources =
             new Dictionary<Weapon, WeaponData>();
 
         private void Awake()
         {
+            if (config == null)
+            {
+                Debug.LogError(
+                    "Bootstrap: arraste um RunConfig no campo Config. Sem ele não há partida.", this);
+                return;
+            }
+
             if (primitiveMaterial == null)
             {
                 Debug.LogError(
@@ -73,24 +53,24 @@ namespace ScriptableSurvivors.Unity
                 return;
             }
 
-            ConfigureCamera();
-            CreateGround();
-
             var loadout = BuildLoadout();
             if (loadout.Count == 0)
             {
                 Debug.LogError(
-                    "Bootstrap: nenhuma arma. Arraste ao menos um WeaponData no campo Weapons.", this);
+                    "Bootstrap: nenhuma arma no RunConfig. Arraste ao menos um WeaponData.", this);
                 return;
             }
 
+            ConfigureCamera();
+            CreateGround();
+
             var arena = new Arena(
-                new Player(playerSpeed, playerMaxHealth),
+                config.CreatePlayer(),
                 loadout,
-                contactRadius,
-                hitRadius,
-                experience: null,
-                enemySpawn: BuildEnemySpawn());
+                config.ContactRadius,
+                config.HitRadius,
+                config.CreateExperience(),
+                BuildEnemySpawn());
 
             CreatePlayerBody(arena.Player);
             CreateProjectileFactory(arena);
@@ -122,15 +102,15 @@ namespace ScriptableSurvivors.Unity
                 PrimitiveType.Plane, "Ground", new Color(0.16f, 0.18f, 0.22f), primitiveMaterial);
 
             // A primitiva Plane tem 10x10 unidades na escala 1.
-            ground.transform.localScale = Vector3.one * (arenaRadius / 5f);
+            ground.transform.localScale = Vector3.one * (groundRadius / 5f);
         }
 
-        private void CreatePlayerBody(Player movement)
+        private void CreatePlayerBody(Player player)
         {
             var body = RuntimePrimitives.Create(
                 PrimitiveType.Capsule, "Player", new Color(0.90f, 0.74f, 0.26f), primitiveMaterial);
             body.transform.position = new Vector3(0f, 1f, 0f);
-            body.AddComponent<PlayerView>().Bind(movement);
+            body.AddComponent<PlayerView>().Bind(player);
         }
 
         /// <summary>
@@ -140,10 +120,8 @@ namespace ScriptableSurvivors.Unity
         private List<Weapon> BuildLoadout()
         {
             var loadout = new List<Weapon>();
-            if (weapons == null)
-                return loadout;
 
-            foreach (var data in weapons)
+            foreach (var data in config.Weapons)
             {
                 if (data == null)
                     continue;
@@ -156,76 +134,39 @@ namespace ScriptableSurvivors.Unity
             return loadout;
         }
 
-        private void CreateUpgradeScreen(Arena arena, Transform canvas, Font font)
+        /// <summary>
+        /// Converte o catálogo de assets em números puros e entrega à Arena.
+        /// Nascer é parte da simulação, então a pausa de escolha de carta
+        /// congela o spawn de graça.
+        /// </summary>
+        private EnemySpawn BuildEnemySpawn()
         {
-            if (upgradePool == null || upgradePool.Length == 0)
-            {
-                Debug.LogError(
-                    "Bootstrap: monte de upgrades vazio. Sem cartas, a run trava no " +
-                    "primeiro nível — a Arena pausa esperando uma escolha que nunca vem. " +
-                    "Arraste UpgradeData no campo Upgrade Pool.", this);
-                return;
-            }
+            var stats = new List<EnemyStats>();
 
-            var upgrades = new List<Upgrade>();
-            foreach (var data in upgradePool)
+            foreach (var data in config.Enemies)
             {
                 if (data != null)
-                    upgrades.Add(data.ToDomain());
+                    stats.Add(data.ToDomain());
             }
 
-            if (upgrades.Count == 0)
-                return;
+            if (stats.Count == 0)
+            {
+                Debug.LogWarning(
+                    "Bootstrap: catálogo de inimigos vazio no RunConfig — nada vai nascer.", this);
+                return null;
+            }
 
-            var host = new GameObject("UpgradeScreen");
-            host.AddComponent<UpgradeScreen>().Bind(
-                arena, new UpgradePool(upgrades), CreateRandom(), upgradePool, font, canvas);
+            return new EnemySpawn(
+                stats,
+                new SpawnRing(config.SpawnRadius),
+                new SpawnTimer(config.SpawnInterval),
+                config.CreateRandom());
         }
 
-        private void CreateHud(Arena arena)
+        private void CreateEnemyBodyFactory(Arena arena)
         {
-            var canvasObject = new GameObject("HUD", typeof(Canvas), typeof(CanvasScaler));
-            var canvas = canvasObject.GetComponent<Canvas>();
-            canvas.renderMode = RenderMode.ScreenSpaceOverlay;
-
-            // Sem o scaler, o texto encolheria em telas grandes e sumiria no
-            // canto durante a apresentação.
-            var scaler = canvasObject.GetComponent<CanvasScaler>();
-            scaler.uiScaleMode = CanvasScaler.ScaleMode.ScaleWithScreenSize;
-            scaler.referenceResolution = new Vector2(1920f, 1080f);
-
-            var labelObject = new GameObject("Stats", typeof(Text));
-            labelObject.transform.SetParent(canvasObject.transform, worldPositionStays: false);
-
-            var label = labelObject.GetComponent<Text>();
-            label.font = LoadBuiltinFont();
-            label.fontSize = 34;
-            label.lineSpacing = 1.2f;
-            label.color = Color.white;
-            label.alignment = TextAnchor.UpperLeft;
-            label.horizontalOverflow = HorizontalWrapMode.Overflow;
-            label.verticalOverflow = VerticalWrapMode.Overflow;
-
-            // Ancorado no canto superior esquerdo, para não depender da resolução.
-            var rect = label.rectTransform;
-            rect.anchorMin = new Vector2(0f, 1f);
-            rect.anchorMax = new Vector2(0f, 1f);
-            rect.pivot = new Vector2(0f, 1f);
-            rect.anchoredPosition = new Vector2(28f, -24f);
-            rect.sizeDelta = new Vector2(480f, 140f);
-
-            canvasObject.AddComponent<HudView>().Bind(arena, label);
-
-            CreateUpgradeScreen(arena, canvasObject.transform, label.font);
-        }
-
-        private static Font LoadBuiltinFont()
-        {
-            var font = Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf");
-            if (font == null)
-                Debug.LogError("Bootstrap: fonte embutida do HUD não encontrada.");
-
-            return font;
+            var host = new GameObject("Enemies");
+            host.AddComponent<EnemyBodyFactory>().Bind(arena, config.Enemies, primitiveMaterial);
         }
 
         /// <summary>
@@ -259,45 +200,65 @@ namespace ScriptableSurvivors.Unity
             };
         }
 
-        /// <summary>
-        /// Converte o catálogo de assets em números puros e entrega à Arena.
-        /// Nascer virou parte da simulação, então a pausa de escolha de carta
-        /// congela o spawn de graça.
-        /// </summary>
-        private EnemySpawn BuildEnemySpawn()
+        private void CreateHud(Arena arena)
         {
-            if (enemyCatalog == null || enemyCatalog.Length == 0)
-            {
-                Debug.LogWarning(
-                    "Bootstrap: catálogo de inimigos vazio — nada vai nascer. " +
-                    "Arraste um EnemyData no campo Enemy Catalog.", this);
-                return null;
-            }
+            var canvasObject = new GameObject("HUD", typeof(Canvas), typeof(CanvasScaler));
+            var canvas = canvasObject.GetComponent<Canvas>();
+            canvas.renderMode = RenderMode.ScreenSpaceOverlay;
 
-            var stats = new List<EnemyStats>();
-            foreach (var data in enemyCatalog)
-            {
-                if (data != null)
-                    stats.Add(data.ToDomain());
-            }
+            // Sem o scaler, o texto encolheria em telas grandes e sumiria no
+            // canto durante a apresentação.
+            var scaler = canvasObject.GetComponent<CanvasScaler>();
+            scaler.uiScaleMode = CanvasScaler.ScaleMode.ScaleWithScreenSize;
+            scaler.referenceResolution = new Vector2(1920f, 1080f);
 
-            if (stats.Count == 0)
-                return null;
+            var labelObject = new GameObject("Stats", typeof(Text));
+            labelObject.transform.SetParent(canvasObject.transform, worldPositionStays: false);
 
-            return new EnemySpawn(
-                stats,
-                new SpawnRing(spawnRadius),
-                new SpawnTimer(spawnInterval),
-                CreateRandom());
+            var label = labelObject.GetComponent<Text>();
+            label.font = LoadBuiltinFont();
+            label.fontSize = 34;
+            label.lineSpacing = 1.2f;
+            label.color = Color.white;
+            label.alignment = TextAnchor.UpperLeft;
+            label.horizontalOverflow = HorizontalWrapMode.Overflow;
+            label.verticalOverflow = VerticalWrapMode.Overflow;
+
+            // Ancorado no canto superior esquerdo, para não depender da resolução.
+            var rect = label.rectTransform;
+            rect.anchorMin = new Vector2(0f, 1f);
+            rect.anchorMax = new Vector2(0f, 1f);
+            rect.pivot = new Vector2(0f, 1f);
+            rect.anchoredPosition = new Vector2(28f, -24f);
+            rect.sizeDelta = new Vector2(520f, 400f);
+
+            canvasObject.AddComponent<HudView>().Bind(arena, label);
+
+            CreateUpgradeScreen(arena, canvasObject.transform, label.font);
         }
 
-        private void CreateEnemyBodyFactory(Arena arena)
+        private void CreateUpgradeScreen(Arena arena, Transform canvas, Font font)
         {
-            if (enemyCatalog == null || enemyCatalog.Length == 0)
-                return;
+            var upgrades = new List<Upgrade>();
 
-            var host = new GameObject("Enemies");
-            host.AddComponent<EnemyBodyFactory>().Bind(arena, enemyCatalog, primitiveMaterial);
+            foreach (var data in config.UpgradePool)
+            {
+                if (data != null)
+                    upgrades.Add(data.ToDomain());
+            }
+
+            if (upgrades.Count == 0)
+            {
+                Debug.LogError(
+                    "Bootstrap: monte de upgrades vazio no RunConfig. Sem cartas, a run trava " +
+                    "no primeiro nível — a Arena pausa esperando uma escolha que nunca vem.", this);
+                return;
+            }
+
+            var host = new GameObject("UpgradeScreen");
+            host.AddComponent<UpgradeScreen>().Bind(
+                arena, new UpgradePool(upgrades), config.CreateRandom(),
+                config.UpgradePool, font, canvas);
         }
 
         private void CreateRunner(Arena arena)
@@ -306,13 +267,13 @@ namespace ScriptableSurvivors.Unity
             host.AddComponent<ArenaRunner>().Bind(arena, cameraYaw);
         }
 
-        private Random CreateRandom()
+        private static Font LoadBuiltinFont()
         {
-            var seed = randomSeed != 0 ? randomSeed : Environment.TickCount;
+            var font = Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf");
+            if (font == null)
+                Debug.LogError("Bootstrap: fonte embutida do HUD não encontrada.");
 
-            // Anotada no Console para que uma run interessante possa ser repetida.
-            Debug.Log($"Semente desta run: {seed}");
-            return new Random(seed);
+            return font;
         }
     }
 }
