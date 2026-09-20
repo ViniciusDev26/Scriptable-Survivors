@@ -48,6 +48,10 @@ namespace ScriptableSurvivors.Unity
         [Tooltip("Distância a partir da qual um tiro acerta um inimigo.")]
         [SerializeField, Min(0.1f)] private float hitRadius = 0.8f;
 
+        [Header("Upgrades")]
+        [Tooltip("O monte de cartas da run. Criar um upgrade novo é criar um asset e arrastar aqui.")]
+        [SerializeField] private UpgradeData[] upgradePool;
+
         [Header("Inimigos")]
         [SerializeField] private EnemyData[] enemyCatalog;
         [SerializeField, Min(1f)] private float spawnRadius = 25f;
@@ -152,6 +156,32 @@ namespace ScriptableSurvivors.Unity
             return loadout;
         }
 
+        private void CreateUpgradeScreen(Arena arena, Transform canvas, Font font)
+        {
+            if (upgradePool == null || upgradePool.Length == 0)
+            {
+                Debug.LogError(
+                    "Bootstrap: monte de upgrades vazio. Sem cartas, a run trava no " +
+                    "primeiro nível — a Arena pausa esperando uma escolha que nunca vem. " +
+                    "Arraste UpgradeData no campo Upgrade Pool.", this);
+                return;
+            }
+
+            var upgrades = new List<Upgrade>();
+            foreach (var data in upgradePool)
+            {
+                if (data != null)
+                    upgrades.Add(data.ToDomain());
+            }
+
+            if (upgrades.Count == 0)
+                return;
+
+            var host = new GameObject("UpgradeScreen");
+            host.AddComponent<UpgradeScreen>().Bind(
+                arena, new UpgradePool(upgrades), CreateRandom(), upgradePool, font, canvas);
+        }
+
         private void CreateHud(Arena arena)
         {
             var canvasObject = new GameObject("HUD", typeof(Canvas), typeof(CanvasScaler));
@@ -185,6 +215,8 @@ namespace ScriptableSurvivors.Unity
             rect.sizeDelta = new Vector2(480f, 140f);
 
             canvasObject.AddComponent<HudView>().Bind(arena, label);
+
+            CreateUpgradeScreen(arena, canvasObject.transform, label.font);
         }
 
         private static Font LoadBuiltinFont()
