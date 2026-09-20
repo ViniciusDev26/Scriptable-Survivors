@@ -68,7 +68,9 @@ Players      →  Combat, Progression
 Arena        →  todos
 ```
 
-Consequência prática: **145 testes rodam em ~30 ms, sem abrir o editor.**
+Consequência prática: dos **145 testes**, **143 rodam em ~30 ms fora do
+editor** — os outros dois atravessam a fronteira de propósito, para garantir
+que nenhum campo se perca no mapeamento de asset para domínio.
 
 ```bash
 dotnet test    # com os projetos em Domain/ e Tests/
