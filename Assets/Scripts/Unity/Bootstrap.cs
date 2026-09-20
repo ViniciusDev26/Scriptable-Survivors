@@ -31,6 +31,10 @@ namespace ScriptableSurvivors.Unity
         [SerializeField] private float cameraDistance = 25f;
         [SerializeField] private float cameraSize = 10f;
 
+        [Header("Visual")]
+        [Tooltip("Material base das primitivas. Precisa ser um asset: shader sem\nreferência é descartado da build e vira magenta.")]
+        [SerializeField] private Material primitiveMaterial;
+
         [Header("Arena")]
         [SerializeField, Min(1f)] private float arenaRadius = 30f;
 
@@ -57,6 +61,14 @@ namespace ScriptableSurvivors.Unity
 
         private void Awake()
         {
+            if (primitiveMaterial == null)
+            {
+                Debug.LogError(
+                    "Bootstrap: arraste o asset Assets/Art/Materials/RuntimePrimitive " +
+                    "no campo Primitive Material.", this);
+                return;
+            }
+
             ConfigureCamera();
             CreateGround();
 
@@ -102,7 +114,7 @@ namespace ScriptableSurvivors.Unity
         private void CreateGround()
         {
             var ground = RuntimePrimitives.Create(
-                PrimitiveType.Plane, "Ground", new Color(0.16f, 0.18f, 0.22f));
+                PrimitiveType.Plane, "Ground", new Color(0.16f, 0.18f, 0.22f), primitiveMaterial);
 
             // A primitiva Plane tem 10x10 unidades na escala 1.
             ground.transform.localScale = Vector3.one * (arenaRadius / 5f);
@@ -111,7 +123,7 @@ namespace ScriptableSurvivors.Unity
         private void CreatePlayerBody(Player movement)
         {
             var body = RuntimePrimitives.Create(
-                PrimitiveType.Capsule, "Player", new Color(0.90f, 0.74f, 0.26f));
+                PrimitiveType.Capsule, "Player", new Color(0.90f, 0.74f, 0.26f), primitiveMaterial);
             body.transform.position = new Vector3(0f, 1f, 0f);
             body.AddComponent<PlayerView>().Bind(movement);
         }
@@ -204,7 +216,8 @@ namespace ScriptableSurvivors.Unity
                     : RuntimePrimitives.Create(
                         PrimitiveType.Sphere,
                         "Shot",
-                        explosive ? new Color(0.95f, 0.55f, 0.18f) : new Color(0.98f, 0.92f, 0.45f));
+                        explosive ? new Color(0.95f, 0.55f, 0.18f) : new Color(0.98f, 0.92f, 0.45f),
+                        primitiveMaterial);
 
                 var scale = explosive ? Mathf.Max(0.5f, projectile.SplashRadius * 0.45f) : 0.35f;
                 body.transform.localScale = Vector3.one * scale;
@@ -230,7 +243,8 @@ namespace ScriptableSurvivors.Unity
                 arena,
                 new SpawnRing(spawnRadius),
                 new SpawnTimer(spawnInterval),
-                CreateRandom());
+                CreateRandom(),
+                primitiveMaterial);
             return spawner;
         }
 

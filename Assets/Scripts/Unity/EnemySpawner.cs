@@ -20,14 +20,18 @@ namespace ScriptableSurvivors.Unity
         private SpawnTimer timer;
         private Random random;
 
+        private Material primitiveMaterial;
+
         public void Bind(
             EnemyData[] enemyCatalog,
             Arena boundArena,
             SpawnRing spawnRing,
             SpawnTimer spawnTimer,
-            Random rng)
+            Random rng,
+            Material baseMaterial)
         {
             catalog = enemyCatalog;
+            primitiveMaterial = baseMaterial;
             arena = boundArena;
             ring = spawnRing;
             timer = spawnTimer;
@@ -65,7 +69,7 @@ namespace ScriptableSurvivors.Unity
             // basta arrastar um modelo do Quaternius no asset — sem tocar aqui.
             var body = data.Prefab != null
                 ? Instantiate(data.Prefab)
-                : RuntimePrimitives.Create(PrimitiveType.Capsule, data.name, new Color(0.78f, 0.27f, 0.30f));
+                : RuntimePrimitives.Create(PrimitiveType.Capsule, data.name, new Color(0.78f, 0.27f, 0.30f), primitiveMaterial);
 
             body.name = data.name;
             body.transform.position = new Vector3(position.X, 1f, position.Y);

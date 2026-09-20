@@ -1,5 +1,4 @@
 using UnityEngine;
-using UnityEngine.Rendering;
 
 namespace ScriptableSurvivors.Unity
 {
@@ -10,11 +9,19 @@ namespace ScriptableSurvivors.Unity
     /// </summary>
     internal static class RuntimePrimitives
     {
-        public static GameObject Create(PrimitiveType type, string name, Color color)
+        /// <summary>
+        /// O material base vem de fora, como asset referenciado pela cena.
+        ///
+        /// Não use Shader.Find aqui. Nada na cena usa material — tudo nasce por
+        /// código — então a Unity descarta os shaders sem referência ao montar a
+        /// build, e o Shader.Find devolve null em runtime. O resultado é magenta,
+        /// que aparece só na build e nunca no editor.
+        /// </summary>
+        public static GameObject Create(PrimitiveType type, string name, Color color, Material baseMaterial)
         {
             var instance = GameObject.CreatePrimitive(type);
             instance.name = name;
-            instance.GetComponent<Renderer>().sharedMaterial = CreateMaterial(color);
+            instance.GetComponent<Renderer>().sharedMaterial = Tint(baseMaterial, color);
 
             // A colisão é resolvida no domínio, por distância. O colisor que vem
             // de brinde seria peso morto — e, pior, um colisor sem Rigidbody
@@ -27,20 +34,17 @@ namespace ScriptableSurvivors.Unity
             return instance;
         }
 
-        /// <summary>
-        /// Primitivas criadas em runtime vêm com o material do pipeline antigo,
-        /// que a URP desenha em rosa. Este clona o material padrão do pipeline
-        /// ativo para herdar o shader certo.
-        /// </summary>
-        public static Material CreateMaterial(Color color)
+        public static Material Tint(Material baseMaterial, Color color)
         {
-            var pipeline = GraphicsSettings.currentRenderPipeline;
-            var material = pipeline != null && pipeline.defaultMaterial != null
-                ? new Material(pipeline.defaultMaterial)
-                : new Material(Shader.Find("Universal Render Pipeline/Lit"));
+            if (baseMaterial == null)
+            {
+                Debug.LogError(
+                    "RuntimePrimitives: material base ausente. Arraste o asset " +
+                    "RuntimePrimitive no campo Primitive Material do Bootstrap.");
+                return null;
+            }
 
-            material.color = color;
-            return material;
+            return new Material(baseMaterial) { color = color };
         }
     }
 }
