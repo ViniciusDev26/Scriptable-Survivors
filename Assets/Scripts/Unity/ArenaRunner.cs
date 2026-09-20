@@ -13,6 +13,8 @@ namespace ScriptableSurvivors.Unity
     /// </summary>
     public sealed class ArenaRunner : MonoBehaviour
     {
+        private readonly TouchStick stick = new TouchStick();
+
         private Arena arena;
         private float cameraYaw;
 
@@ -27,7 +29,14 @@ namespace ScriptableSurvivors.Unity
             if (arena == null)
                 return;
 
-            arena.Tick(KeyboardInput.ReadMoveAxis(), cameraYaw, Time.deltaTime);
+            // O dedo só comanda quando a partida está rodando: com a tela de
+            // cartas ou a de morte abertas, o toque pertence a elas.
+            stick.Read(accepting: !arena.IsOver && !arena.IsAwaitingUpgrade);
+
+            var keys = KeyboardInput.ReadMoveAxis();
+            var input = keys == System.Numerics.Vector2.Zero ? stick.Direction : keys;
+
+            arena.Tick(input, cameraYaw, Time.deltaTime);
         }
     }
 }

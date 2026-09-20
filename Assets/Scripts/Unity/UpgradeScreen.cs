@@ -100,15 +100,40 @@ namespace ScriptableSurvivors.Unity
             panel.SetActive(true);
         }
 
-        private static int ReadChoice()
+        private int ReadChoice()
         {
             var keyboard = Keyboard.current;
-            if (keyboard == null)
+            if (keyboard != null)
+            {
+                if (keyboard.digit1Key.wasPressedThisFrame) return 0;
+                if (keyboard.digit2Key.wasPressedThisFrame) return 1;
+                if (keyboard.digit3Key.wasPressedThisFrame) return 2;
+            }
+
+            return TappedCard();
+        }
+
+        /// <summary>
+        /// Toque nas cartas sem EventSystem: basta perguntar a cada retângulo
+        /// se o ponto caiu dentro. Botão de uGUI exigiria GraphicRaycaster e
+        /// módulo de input com action maps — três peças para responder isto.
+        /// </summary>
+        private int TappedCard()
+        {
+            if (!PointerInput.PressedThisFrame)
                 return -1;
 
-            if (keyboard.digit1Key.wasPressedThisFrame) return 0;
-            if (keyboard.digit2Key.wasPressedThisFrame) return 1;
-            if (keyboard.digit3Key.wasPressedThisFrame) return 2;
+            var point = PointerInput.Position;
+
+            for (var i = 0; i < cards.Count; i++)
+            {
+                if (!cards[i].gameObject.activeSelf)
+                    continue;
+
+                if (RectTransformUtility.RectangleContainsScreenPoint(cards[i], point, null))
+                    return i;
+            }
+
             return -1;
         }
 
@@ -126,7 +151,7 @@ namespace ScriptableSurvivors.Unity
             var hint = UiBuilder.Label(
                 "Hint", backdrop, font, 28, TextAnchor.MiddleCenter, new Color(0.65f, 0.68f, 0.74f));
             UiBuilder.Place(hint.rectTransform, new Vector2(0f, -250f), new Vector2(1200f, 60f));
-            hint.text = "escolha com  1   2   3";
+            hint.text = "toque na carta  ou aperte  1   2   3";
 
             const float width = 420f;
             const float gap = 40f;

@@ -13,7 +13,7 @@ MonoBehaviour:
   m_Name: DefaultRun
   m_EditorClassIdentifier: ScriptableSurvivors.Unity::ScriptableSurvivors.Unity.RunConfig
   playerSpeed: 8
-  playerMaxHealth: 100
+  playerMaxHealth: 50
   playerPrefab: {fileID: 919132149155446097, guid: 1c8b3705459522ff2980d6cad59a38c0, type: 3}
   playerModelScale: 1
   playerWalkClip: Walk
@@ -29,7 +29,11 @@ MonoBehaviour:
   - {fileID: 11400000, guid: 70c99d2650404479b6c2164f2108407b, type: 2}
   - {fileID: 11400000, guid: 4d84f84f9c6347af9ae366d4d526da31, type: 2}
   spawnRadius: 25
-  spawnInterval: 1
+  firstWaveSize: 10
+  waveGrowth: 5
+  waveDuration: 30
+  spawnWindow: 15
+  waveIntermission: 5
   upgradePool:
   - {fileID: 11400000, guid: 90b84d607740db885af3c85d66af19fe, type: 2}
   - {fileID: 11400000, guid: 56aebb5db3977630d83a7e8fe070bfee, type: 2}

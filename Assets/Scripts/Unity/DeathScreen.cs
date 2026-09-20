@@ -39,7 +39,10 @@ namespace ScriptableSurvivors.Unity
                 Show();
 
             var keyboard = Keyboard.current;
-            if (keyboard != null && keyboard.rKey.wasPressedThisFrame)
+            var restart = (keyboard != null && keyboard.rKey.wasPressedThisFrame)
+                          || PointerInput.PressedThisFrame;
+
+            if (restart)
                 SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex);
         }
 
@@ -78,7 +81,7 @@ namespace ScriptableSurvivors.Unity
             var hint = UiBuilder.Label(
                 "Hint", backdrop, font, 30, TextAnchor.MiddleCenter, new Color(0.62f, 0.64f, 0.70f));
             UiBuilder.Place(hint.rectTransform, new Vector2(0f, -250f), new Vector2(1200f, 60f));
-            hint.text = "pressione  R  para recomeçar";
+            hint.text = "toque na tela  ou aperte  R  para recomeçar";
 
             panel.SetActive(false);
         }
