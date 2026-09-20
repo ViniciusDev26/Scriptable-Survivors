@@ -58,7 +58,9 @@ namespace ScriptableSurvivors.Unity
             if (arena == null || panel == null)
                 return;
 
-            if (!arena.IsAwaitingUpgrade)
+            // Morrer com níveis pendentes é possível: sem esta guarda, a tela
+            // de cartas apareceria por cima da de morte.
+            if (arena.IsOver || !arena.IsAwaitingUpgrade)
             {
                 if (panel.activeSelf)
                     panel.SetActive(false);

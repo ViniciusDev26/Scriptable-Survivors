@@ -45,6 +45,13 @@ namespace ScriptableSurvivors.Domain
 
         public int Kills { get; private set; }
 
+        /// <summary>
+        /// Segundos de run. Não conta o tempo parado escolhendo carta nem
+        /// depois da morte — sobreviver é o que está sendo medido, e ler as
+        /// opções com calma não deveria inflar o resultado.
+        /// </summary>
+        public float Elapsed { get; private set; }
+
         public bool IsOver => Player.Health.IsDead;
 
         /// <summary>
@@ -118,6 +125,8 @@ namespace ScriptableSurvivors.Domain
 
             if (IsOver || IsAwaitingUpgrade)
                 return;
+
+            Elapsed += deltaTime;
 
             Player.Move(playerInput, cameraYawDegrees, deltaTime);
 

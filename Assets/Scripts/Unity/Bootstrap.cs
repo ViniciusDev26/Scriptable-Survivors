@@ -239,6 +239,10 @@ namespace ScriptableSurvivors.Unity
             canvasObject.AddComponent<HudView>().Bind(arena, label);
 
             CreateUpgradeScreen(arena, canvasObject.transform, label.font);
+
+            new GameObject("DeathScreen")
+                .AddComponent<DeathScreen>()
+                .Bind(arena, label.font, canvasObject.transform);
         }
 
         private void CreateUpgradeScreen(Arena arena, Transform canvas, Font font)

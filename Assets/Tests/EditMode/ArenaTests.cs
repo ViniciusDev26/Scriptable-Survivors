@@ -612,5 +612,48 @@ namespace ScriptableSurvivors.Tests
 
             Assert.That(distanceToPlayer, Is.EqualTo(25f).Within(0.01f));
         }
+
+        // ---------- tempo de run ----------
+
+        [Test]
+        public void Counts_the_seconds_survived()
+        {
+            var arena = Peaceful();
+
+            for (var i = 0; i < 120; i++)
+                arena.Tick(Vector2.Zero, 0f, 1f / 60f);
+
+            Assert.That(arena.Elapsed, Is.EqualTo(2f).Within(0.01f));
+        }
+
+        [Test]
+        public void Reading_the_cards_does_not_count_as_surviving()
+        {
+            var arena = Make(Pistol);
+            arena.Add(new Enemy(Frail, new Vector2(0f, 3f)));
+            for (var i = 0; i < 20; i++)
+                arena.Tick(Vector2.Zero, 0f, 1f / 60f);
+            Assume.That(arena.IsAwaitingUpgrade, Is.True);
+            var beforeReading = arena.Elapsed;
+
+            arena.Tick(Vector2.Zero, 0f, 30f);
+
+            Assert.That(arena.Elapsed, Is.EqualTo(beforeReading),
+                "Ler as opções com calma não pode inflar o tempo de sobrevivência.");
+        }
+
+        [Test]
+        public void The_clock_stops_at_death()
+        {
+            var arena = Peaceful(maxHealth: 4f);
+            arena.Add(new Enemy(Standing, Vector2.Zero));
+            arena.Tick(Vector2.Zero, 0f, 1f);
+            Assume.That(arena.IsOver, Is.True);
+            var atDeath = arena.Elapsed;
+
+            arena.Tick(Vector2.Zero, 0f, 60f);
+
+            Assert.That(arena.Elapsed, Is.EqualTo(atDeath));
+        }
     }
 }

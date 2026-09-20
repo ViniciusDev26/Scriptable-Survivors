@@ -75,9 +75,6 @@ namespace ScriptableSurvivors.Unity
 
             AppendBonuses();
 
-            if (arena.IsOver)
-                text.Append("\n\nFIM DA RUN");
-
             label.text = text.ToString();
         }
 
