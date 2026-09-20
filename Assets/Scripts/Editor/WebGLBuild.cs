@@ -47,10 +47,17 @@ namespace ScriptableSurvivors.Build
                 return;
             }
 
-            // Sem compressão o resultado abre em qualquer servidor estático.
-            // Brotli e Gzip exigem cabeçalhos configurados no servidor, e
-            // descobrir isso na véspera da apresentação seria caro.
-            PlayerSettings.WebGL.compressionFormat = WebGLCompressionFormat.Disabled;
+            // Brotli comprime o .wasm em torno de 4 a 5 vezes. O navegador só
+            // descomprime nativamente se o servidor mandar Content-Encoding: br
+            // — e quando não manda, o jogo não abre, com uma mensagem inútil.
+            //
+            // O fallback embute um descompressor em JavaScript: com o cabeçalho
+            // certo o navegador faz nativo e rápido; sem ele o JavaScript
+            // assume. Isso faz a build abrir em qualquer servidor estático,
+            // inclusive um python -m http.server, ao custo de um carregador
+            // maior e de uma descompressão mais lenta no caso ruim.
+            PlayerSettings.WebGL.compressionFormat = WebGLCompressionFormat.Brotli;
+            PlayerSettings.WebGL.decompressionFallback = true;
 
             var options = new BuildPlayerOptions
             {
