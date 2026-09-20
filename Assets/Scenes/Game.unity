@@ -468,6 +468,7 @@ MonoBehaviour:
   cameraPitch: 45
   cameraDistance: 25
   cameraSize: 10
+  primitiveMaterial: {fileID: 2100000, guid: 90917646d3135f34b9bc687085155729, type: 2}
   arenaRadius: 30
   weapons:
   - {fileID: 11400000, guid: 155adf4ebe619856cacc8298bba81e28, type: 2}
