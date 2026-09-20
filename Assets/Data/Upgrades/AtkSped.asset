@@ -12,9 +12,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: d9352f04e16e52257875fa6605141b6c, type: 3}
   m_Name: AtkSped
   m_EditorClassIdentifier: ScriptableSurvivors.Unity::ScriptableSurvivors.Unity.UpgradeData
-  title: 
+  title: 30% ATK SPEED
   description: 
   icon: {fileID: 0}
-  stat: 0
+  stat: 1
   kind: 1
   value: 0.3
