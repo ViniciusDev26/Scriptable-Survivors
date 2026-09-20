@@ -13,7 +13,7 @@ MonoBehaviour:
   m_Name: Pistol
   m_EditorClassIdentifier: ScriptableSurvivors.Unity::ScriptableSurvivors.Unity.WeaponData
   projectilePrefab: {fileID: 0}
-  damage: 5
+  damage: 1
   shotsPerSecond: 3
   projectileSpeed: 20
   range: 12

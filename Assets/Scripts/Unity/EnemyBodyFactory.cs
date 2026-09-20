@@ -34,13 +34,23 @@ namespace ScriptableSurvivors.Unity
 
             // Enquanto o campo Prefab estiver vazio, uma cápsula serve. No Dia 4
             // basta arrastar um modelo do Quaternius no asset — sem tocar aqui.
-            var body = data != null && data.Prefab != null
+            var usingModel = data != null && data.Prefab != null;
+
+            var body = usingModel
                 ? Instantiate(data.Prefab)
                 : RuntimePrimitives.Create(
                     PrimitiveType.Capsule, enemy.Stats.Id, new Color(0.78f, 0.27f, 0.30f), primitiveMaterial);
 
+            // A cápsula tem pivô no centro e mede 2 de altura, então nasce em
+            // y = 1 para a base encostar no chão. Modelo tem pivô nos pés — em
+            // y = 1 ele flutuaria.
+            var height = usingModel ? 0f : 1f;
+
+            if (usingModel)
+                body.transform.localScale = Vector3.one * data.ModelScale;
+
             body.name = enemy.Stats.Id;
-            body.transform.position = new Vector3(enemy.Position.X, 1f, enemy.Position.Y);
+            body.transform.position = new Vector3(enemy.Position.X, height, enemy.Position.Y);
             body.transform.SetParent(transform, worldPositionStays: true);
             body.AddComponent<EnemyView>().Bind(enemy);
         }

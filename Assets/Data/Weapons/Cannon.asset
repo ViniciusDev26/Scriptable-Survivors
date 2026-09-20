@@ -13,7 +13,7 @@ MonoBehaviour:
   m_Name: Cannon
   m_EditorClassIdentifier: ScriptableSurvivors.Unity::ScriptableSurvivors.Unity.WeaponData
   projectilePrefab: {fileID: 0}
-  damage: 10
+  damage: 1
   shotsPerSecond: 0.3
   projectileSpeed: 20
   range: 20

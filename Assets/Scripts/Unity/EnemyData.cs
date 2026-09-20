@@ -17,6 +17,10 @@ namespace ScriptableSurvivors.Unity
         [Header("Visual")]
         [SerializeField] private GameObject prefab;
 
+        [Tooltip("Ajuste fino do tamanho do modelo. Não afeta regra nenhuma — "
+               + "alcance e colisão continuam vindo dos números acima.")]
+        [SerializeField, Min(0.01f)] private float modelScale = 1f;
+
         [Header("Atributos")]
         [SerializeField, Min(0.1f)] private float maxHealth = 10f;
         [SerializeField, Min(0f)] private float speed = 2.5f;
@@ -24,6 +28,7 @@ namespace ScriptableSurvivors.Unity
         [SerializeField, Min(0)] private int xpReward = 1;
 
         public GameObject Prefab => prefab;
+        public float ModelScale => modelScale;
 
         /// <summary>
         /// A fronteira. Devolve uma cópia dos valores; o domínio nunca recebe
