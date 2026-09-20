@@ -13,12 +13,15 @@ namespace ScriptableSurvivors.Domain
     /// </summary>
     public readonly struct EnemyStats
     {
+        /// <summary>Vem do nome do arquivo. O adaptador usa para achar o prefab.</summary>
+        public string Id { get; }
+
         public float MaxHealth { get; }
         public float Speed { get; }
         public float Damage { get; }
         public int XpReward { get; }
 
-        public EnemyStats(float maxHealth, float speed, float damage, int xpReward)
+        public EnemyStats(float maxHealth, float speed, float damage, int xpReward, string id = "enemy")
         {
             if (maxHealth <= 0f)
                 throw new ArgumentOutOfRangeException(nameof(maxHealth), maxHealth, "Vida máxima deve ser positiva.");
@@ -29,6 +32,7 @@ namespace ScriptableSurvivors.Domain
             if (xpReward < 0)
                 throw new ArgumentOutOfRangeException(nameof(xpReward), xpReward, "XP não pode ser negativo.");
 
+            Id = string.IsNullOrWhiteSpace(id) ? "enemy" : id;
             MaxHealth = maxHealth;
             Speed = speed;
             Damage = damage;

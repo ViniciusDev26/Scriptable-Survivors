@@ -516,5 +516,97 @@ namespace ScriptableSurvivors.Tests
             Assert.Throws<System.InvalidOperationException>(
                 () => arena.Choose(new Upgrade("dano", StatKind.WeaponDamage, ModifierKind.Percent, 1f)));
         }
+
+        // ---------- nascimento dentro da simulação ----------
+
+        private static EnemySpawn EverySecond(float radius = 25f) =>
+            new EnemySpawn(
+                new[] { new EnemyStats(20f, 0f, 5f, 1, "slime") },
+                new SpawnRing(radius),
+                new SpawnTimer(1f),
+                new System.Random(1));
+
+        private static Arena WithSpawn(WeaponStats weapon, EnemySpawn spawn) =>
+            new Arena(new Player(10f, 100f), new[] { new Weapon(weapon) },
+                      contactRadius: 1.5f, hitRadius: 0.8f,
+                      experience: null, enemySpawn: spawn);
+
+        [Test]
+        public void Enemies_are_born_inside_the_tick()
+        {
+            var arena = WithSpawn(Unarmed, EverySecond());
+
+            arena.Tick(Vector2.Zero, 0f, 1f);
+
+            Assert.That(arena.Enemies, Has.Count.EqualTo(1));
+        }
+
+        [Test]
+        public void Every_birth_is_announced()
+        {
+            var arena = WithSpawn(Unarmed, EverySecond());
+            var announced = 0;
+            arena.EnemySpawned += _ => announced++;
+
+            arena.Tick(Vector2.Zero, 0f, 3f);
+
+            Assert.That(announced, Is.EqualTo(3),
+                "O adaptador só dá corpo ao que este evento anuncia.");
+        }
+
+        [Test]
+        public void Nobody_is_born_while_a_card_is_owed()
+        {
+            var arena = WithSpawn(Pistol, EverySecond());
+            arena.Add(new Enemy(Frail, new Vector2(0f, 3f)));
+            for (var i = 0; i < 20; i++)
+                arena.Tick(Vector2.Zero, 0f, 1f / 60f);
+            Assume.That(arena.IsAwaitingUpgrade, Is.True);
+            var before = arena.Enemies.Count;
+
+            arena.Tick(Vector2.Zero, 0f, 10f);
+
+            Assert.That(arena.Enemies.Count, Is.EqualTo(before),
+                "O jogador não pode voltar da tela de cartas para um cerco que " +
+                "se formou enquanto ele lia as opções.");
+        }
+
+        [Test]
+        public void Nobody_is_born_after_the_run_ends()
+        {
+            var arena = new Arena(new Player(10f, maxHealth: 4f), new[] { new Weapon(Unarmed) },
+                                  1.5f, 0.8f, null, EverySecond());
+            arena.Add(new Enemy(Standing, Vector2.Zero));
+            arena.Tick(Vector2.Zero, 0f, 1f);
+            Assume.That(arena.IsOver, Is.True);
+            var before = arena.Enemies.Count;
+
+            arena.Tick(Vector2.Zero, 0f, 10f);
+
+            Assert.That(arena.Enemies.Count, Is.EqualTo(before));
+        }
+
+        [Test]
+        public void The_newborn_carries_the_catalog_identity()
+        {
+            var arena = WithSpawn(Unarmed, EverySecond());
+
+            arena.Tick(Vector2.Zero, 0f, 1f);
+
+            Assert.That(arena.Enemies[0].Stats.Id, Is.EqualTo("slime"),
+                "É por este Id que o adaptador reencontra o prefab do EnemyData.");
+        }
+
+        [Test]
+        public void Births_happen_around_the_player_not_around_the_origin()
+        {
+            var arena = WithSpawn(Unarmed, EverySecond(radius: 25f));
+            arena.Tick(D, 0f, 1f);
+
+            var born = arena.Enemies[0];
+            var distanceToPlayer = (born.Position - arena.Player.Position).Length();
+
+            Assert.That(distanceToPlayer, Is.EqualTo(25f).Within(0.01f));
+        }
     }
 }

@@ -29,6 +29,6 @@ namespace ScriptableSurvivors.Unity
         /// A fronteira. Devolve uma cópia dos valores; o domínio nunca recebe
         /// este objeto.
         /// </summary>
-        public EnemyStats ToDomain() => new EnemyStats(maxHealth, speed, damage, xpReward);
+        public EnemyStats ToDomain() => new EnemyStats(maxHealth, speed, damage, xpReward, name);
     }
 }

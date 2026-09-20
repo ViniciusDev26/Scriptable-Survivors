@@ -25,6 +25,8 @@ namespace ScriptableSurvivors.Domain
 
         public Experience Xp { get; }
 
+        private readonly EnemySpawn spawn;
+
         /// <summary>Todas disparam sozinhas, cada uma com seu próprio recarregamento.</summary>
         public IReadOnlyList<Weapon> Weapons => weapons;
 
@@ -53,12 +55,16 @@ namespace ScriptableSurvivors.Domain
         /// </summary>
         public event Action<Weapon, Projectile> ProjectileFired;
 
+        /// <summary>Disparado quando um inimigo nasce. O adaptador lhe dá corpo.</summary>
+        public event Action<Enemy> EnemySpawned;
+
         public Arena(
             Player player,
             IEnumerable<Weapon> loadout,
             float contactRadius,
             float hitRadius,
-            Experience experience = null)
+            Experience experience = null,
+            EnemySpawn enemySpawn = null)
         {
             if (loadout == null)
                 throw new ArgumentNullException(nameof(loadout));
@@ -70,6 +76,7 @@ namespace ScriptableSurvivors.Domain
             Player = player ?? throw new ArgumentNullException(nameof(player));
             Player.BindModifiers(Modifiers);
             Xp = experience ?? new Experience();
+            spawn = enemySpawn;
             ContactRadius = contactRadius;
             HitRadius = hitRadius;
 
@@ -110,6 +117,8 @@ namespace ScriptableSurvivors.Domain
 
             Player.Move(playerInput, cameraYawDegrees, deltaTime);
 
+            SpawnEnemies(deltaTime);
+
             for (var i = 0; i < enemies.Count; i++)
                 enemies[i].MoveToward(Player.Position, deltaTime);
 
@@ -117,6 +126,29 @@ namespace ScriptableSurvivors.Domain
             AdvanceProjectiles(deltaTime);
             FireWeapons(deltaTime);
             BuryTheDead();
+        }
+
+        /// <summary>
+        /// Nascer faz parte da simulação, então acontece depois da guarda de
+        /// pausa: durante a escolha de carta ninguém nasce, e o jogador não volta
+        /// para um cerco que se formou enquanto ele lia as opções.
+        ///
+        /// Vem depois do jogador se mover, pela mesma razão da perseguição: o
+        /// círculo de spawn precisa estar em volta de onde ele ESTÁ, não de onde
+        /// estava no começo do quadro.
+        /// </summary>
+        private void SpawnEnemies(float deltaTime)
+        {
+            if (spawn == null)
+                return;
+
+            var due = spawn.Advance(deltaTime);
+            for (var i = 0; i < due; i++)
+            {
+                var enemy = spawn.Create(Player.Position);
+                Add(enemy);
+                EnemySpawned?.Invoke(enemy);
+            }
         }
 
         /// <summary>

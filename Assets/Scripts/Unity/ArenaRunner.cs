@@ -4,8 +4,9 @@ using UnityEngine;
 namespace ScriptableSurvivors.Unity
 {
     /// <summary>
-    /// O único Update do jogo. Aqui a ordem é explícita: primeiro nascem os
-    /// inimigos do quadro, depois a simulação avança um passo.
+    /// O único Update do jogo: um passo de simulação por quadro. Nascer,
+    /// perseguir, atirar e morrer acontecem todos dentro do Tick, em ordem
+    /// definida pelo domínio — inclusive a pausa que congela tudo isso.
     ///
     /// As views desenham em LateUpdate, que a Unity garante rodar depois de
     /// TODOS os Update — é o que impede de desenhar meio quadro desatualizado.
@@ -13,13 +14,11 @@ namespace ScriptableSurvivors.Unity
     public sealed class ArenaRunner : MonoBehaviour
     {
         private Arena arena;
-        private EnemySpawner spawner;
         private float cameraYaw;
 
-        public void Bind(Arena boundArena, EnemySpawner enemySpawner, float yawDegrees)
+        public void Bind(Arena boundArena, float yawDegrees)
         {
             arena = boundArena;
-            spawner = enemySpawner;
             cameraYaw = yawDegrees;
         }
 
@@ -28,12 +27,7 @@ namespace ScriptableSurvivors.Unity
             if (arena == null)
                 return;
 
-            var deltaTime = Time.deltaTime;
-
-            if (spawner != null)
-                spawner.Advance(deltaTime);
-
-            arena.Tick(KeyboardInput.ReadMoveAxis(), cameraYaw, deltaTime);
+            arena.Tick(KeyboardInput.ReadMoveAxis(), cameraYaw, Time.deltaTime);
         }
     }
 }

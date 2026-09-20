@@ -84,14 +84,15 @@ namespace ScriptableSurvivors.Unity
                 new Player(playerSpeed, playerMaxHealth),
                 loadout,
                 contactRadius,
-                hitRadius);
+                hitRadius,
+                experience: null,
+                enemySpawn: BuildEnemySpawn());
 
             CreatePlayerBody(arena.Player);
             CreateProjectileFactory(arena);
+            CreateEnemyBodyFactory(arena);
             CreateHud(arena);
-
-            var spawner = CreateSpawner(arena);
-            CreateRunner(arena, spawner);
+            CreateRunner(arena);
         }
 
         private void ConfigureCamera()
@@ -226,7 +227,12 @@ namespace ScriptableSurvivors.Unity
             };
         }
 
-        private EnemySpawner CreateSpawner(Arena arena)
+        /// <summary>
+        /// Converte o catálogo de assets em números puros e entrega à Arena.
+        /// Nascer virou parte da simulação, então a pausa de escolha de carta
+        /// congela o spawn de graça.
+        /// </summary>
+        private EnemySpawn BuildEnemySpawn()
         {
             if (enemyCatalog == null || enemyCatalog.Length == 0)
             {
@@ -236,22 +242,36 @@ namespace ScriptableSurvivors.Unity
                 return null;
             }
 
-            var host = new GameObject("Enemies");
-            var spawner = host.AddComponent<EnemySpawner>();
-            spawner.Bind(
-                enemyCatalog,
-                arena,
+            var stats = new List<EnemyStats>();
+            foreach (var data in enemyCatalog)
+            {
+                if (data != null)
+                    stats.Add(data.ToDomain());
+            }
+
+            if (stats.Count == 0)
+                return null;
+
+            return new EnemySpawn(
+                stats,
                 new SpawnRing(spawnRadius),
                 new SpawnTimer(spawnInterval),
-                CreateRandom(),
-                primitiveMaterial);
-            return spawner;
+                CreateRandom());
         }
 
-        private void CreateRunner(Arena arena, EnemySpawner spawner)
+        private void CreateEnemyBodyFactory(Arena arena)
+        {
+            if (enemyCatalog == null || enemyCatalog.Length == 0)
+                return;
+
+            var host = new GameObject("Enemies");
+            host.AddComponent<EnemyBodyFactory>().Bind(arena, enemyCatalog, primitiveMaterial);
+        }
+
+        private void CreateRunner(Arena arena)
         {
             var host = new GameObject("ArenaRunner");
-            host.AddComponent<ArenaRunner>().Bind(arena, spawner, cameraYaw);
+            host.AddComponent<ArenaRunner>().Bind(arena, cameraYaw);
         }
 
         private Random CreateRandom()
