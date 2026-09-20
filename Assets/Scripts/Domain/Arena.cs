@@ -20,6 +20,11 @@ namespace ScriptableSurvivors.Domain
 
         public Player Player { get; }
 
+        /// <summary>A pilha de upgrades desta run. A base do catálogo fica intocada.</summary>
+        public StatModifiers Modifiers { get; } = new StatModifiers();
+
+        public Experience Xp { get; }
+
         /// <summary>Todas disparam sozinhas, cada uma com seu próprio recarregamento.</summary>
         public IReadOnlyList<Weapon> Weapons => weapons;
 
@@ -37,12 +42,23 @@ namespace ScriptableSurvivors.Domain
         public bool IsOver => Player.Health.IsDead;
 
         /// <summary>
+        /// A run está parada esperando o jogador escolher uma carta. Enquanto
+        /// for verdade, Tick não faz nada — é a pausa do jogo.
+        /// </summary>
+        public bool IsAwaitingUpgrade => Xp.PendingLevelUps > 0;
+
+        /// <summary>
         /// Disparado quando a arma atira. É o "evento de domínio" que o
         /// adaptador traduz em visual — ele cria o corpo do projétil ao ouvir.
         /// </summary>
         public event Action<Weapon, Projectile> ProjectileFired;
 
-        public Arena(Player player, IEnumerable<Weapon> loadout, float contactRadius, float hitRadius)
+        public Arena(
+            Player player,
+            IEnumerable<Weapon> loadout,
+            float contactRadius,
+            float hitRadius,
+            Experience experience = null)
         {
             if (loadout == null)
                 throw new ArgumentNullException(nameof(loadout));
@@ -52,6 +68,8 @@ namespace ScriptableSurvivors.Domain
                 throw new ArgumentOutOfRangeException(nameof(hitRadius), hitRadius, "O raio de acerto deve ser positivo.");
 
             Player = player ?? throw new ArgumentNullException(nameof(player));
+            Player.BindModifiers(Modifiers);
+            Xp = experience ?? new Experience();
             ContactRadius = contactRadius;
             HitRadius = hitRadius;
 
@@ -70,6 +88,7 @@ namespace ScriptableSurvivors.Domain
             if (weapon == null)
                 throw new ArgumentNullException(nameof(weapon));
 
+            weapon.BindModifiers(Modifiers);
             weapons.Add(weapon);
         }
 
@@ -86,7 +105,7 @@ namespace ScriptableSurvivors.Domain
             if (deltaTime < 0f)
                 throw new ArgumentOutOfRangeException(nameof(deltaTime), deltaTime, "deltaTime não pode ser negativo.");
 
-            if (IsOver)
+            if (IsOver || IsAwaitingUpgrade)
                 return;
 
             Player.Move(playerInput, cameraYawDegrees, deltaTime);
@@ -238,9 +257,31 @@ namespace ScriptableSurvivors.Domain
                 if (!enemies[i].Health.IsDead)
                     continue;
 
+                Xp.Add(enemies[i].Stats.XpReward);
                 enemies.RemoveAt(i);
                 Kills++;
             }
+        }
+
+        /// <summary>
+        /// Aplica a carta escolhida e libera a run. Um nível pendente é
+        /// consumido por escolha: cinco inimigos mortos num tiro de canhão
+        /// podem render dois níveis, e cada um pede sua carta.
+        /// </summary>
+        public void Choose(Upgrade upgrade)
+        {
+            if (!Xp.TryConsumeLevelUp())
+                throw new InvalidOperationException("Não há nível pendente para gastar.");
+
+            if (upgrade.Stat == StatKind.PlayerMaxHealth)
+            {
+                // Vida máxima não passa pela pilha: Health é estado vivo, e
+                // recalcular o teto a cada leitura brigaria com o dano sofrido.
+                Player.Health.RaiseMax(upgrade.Value);
+                return;
+            }
+
+            Modifiers.Add(upgrade);
         }
     }
 }

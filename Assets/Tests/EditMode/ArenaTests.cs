@@ -397,5 +397,124 @@ namespace ScriptableSurvivors.Tests
         {
             Assert.Throws<ArgumentNullException>(() => Peaceful().Add(null));
         }
+
+        // ---------- XP, nível e upgrades ----------
+
+        [Test]
+        public void Killing_grants_the_xp_the_catalog_promises()
+        {
+            var arena = Make(Pistol);
+            arena.Add(new Enemy(Frail, new Vector2(0f, 3f)));
+
+            for (var i = 0; i < 20; i++)
+                arena.Tick(Vector2.Zero, 0f, 1f / 60f);
+
+            Assert.That(arena.Kills, Is.EqualTo(1));
+            Assert.That(arena.Xp.Level + arena.Xp.Current, Is.GreaterThan(1),
+                "Frail vale 7 de XP; algo tem de ter entrado.");
+        }
+
+        [Test]
+        public void The_run_pauses_while_a_card_is_owed()
+        {
+            var arena = Make(Pistol);
+            arena.Add(new Enemy(Frail, new Vector2(0f, 3f)));
+            for (var i = 0; i < 20; i++)
+                arena.Tick(Vector2.Zero, 0f, 1f / 60f);
+            Assume.That(arena.IsAwaitingUpgrade, Is.True);
+            var frozen = arena.Player.Position;
+
+            arena.Tick(D, 0f, 1f);
+
+            Assert.That(arena.Player.Position, Is.EqualTo(frozen),
+                "Enquanto a carta não é escolhida, o jogo não anda.");
+        }
+
+        [Test]
+        public void Choosing_a_card_releases_the_run()
+        {
+            var arena = Make(Pistol);
+            arena.Add(new Enemy(Frail, new Vector2(0f, 3f)));
+            for (var i = 0; i < 20; i++)
+                arena.Tick(Vector2.Zero, 0f, 1f / 60f);
+
+            while (arena.IsAwaitingUpgrade)
+                arena.Choose(new Upgrade("dano", StatKind.WeaponDamage, ModifierKind.Percent, 0.3f));
+
+            arena.Tick(D, 0f, 1f);
+
+            Assert.That(arena.Player.Position.X, Is.GreaterThan(0f));
+        }
+
+        [Test]
+        public void A_chosen_card_reaches_the_weapon()
+        {
+            var arena = Make(Pistol);
+            arena.Add(new Enemy(Frail, new Vector2(0f, 3f)));
+            for (var i = 0; i < 20; i++)
+                arena.Tick(Vector2.Zero, 0f, 1f / 60f);
+            var before = arena.Weapons[0].Stats.Damage;
+
+            arena.Choose(new Upgrade("dano", StatKind.WeaponDamage, ModifierKind.Percent, 1f));
+
+            Assert.That(arena.Weapons[0].Stats.Damage, Is.EqualTo(before * 2f).Within(Tolerance));
+            Assert.That(arena.Weapons[0].BaseStats.Damage, Is.EqualTo(10f),
+                "A base do catálogo continua intacta.");
+        }
+
+        [Test]
+        public void A_chosen_card_reaches_the_player()
+        {
+            var arena = Make(Pistol);
+            arena.Add(new Enemy(Frail, new Vector2(0f, 3f)));
+            for (var i = 0; i < 20; i++)
+                arena.Tick(Vector2.Zero, 0f, 1f / 60f);
+
+            arena.Choose(new Upgrade("botas", StatKind.PlayerSpeed, ModifierKind.Percent, 0.5f));
+
+            Assert.That(arena.Player.Speed, Is.EqualTo(15f).Within(Tolerance));
+            Assert.That(arena.Player.BaseSpeed, Is.EqualTo(10f));
+        }
+
+        [Test]
+        public void More_max_health_also_heals()
+        {
+            var arena = Make(Pistol, maxHealth: 100f);
+            arena.Player.Health.TakeDamage(40f);
+            arena.Add(new Enemy(Frail, new Vector2(0f, 3f)));
+            for (var i = 0; i < 20; i++)
+                arena.Tick(Vector2.Zero, 0f, 1f / 60f);
+
+            arena.Choose(new Upgrade("vida", StatKind.PlayerMaxHealth, ModifierKind.Flat, 25f));
+
+            Assert.That(arena.Player.Health.Max, Is.EqualTo(125f));
+            Assert.That(arena.Player.Health.Current, Is.EqualTo(85f),
+                "Só aumentar o teto deixaria a barra maior e vazia — pareceria punição.");
+        }
+
+        [Test]
+        public void A_weapon_equipped_later_also_gets_the_upgrades()
+        {
+            var arena = Make(Pistol);
+            arena.Add(new Enemy(Frail, new Vector2(0f, 3f)));
+            for (var i = 0; i < 20; i++)
+                arena.Tick(Vector2.Zero, 0f, 1f / 60f);
+            arena.Choose(new Upgrade("dano", StatKind.WeaponDamage, ModifierKind.Percent, 1f));
+
+            var cannon = new Weapon(Cannon);
+            arena.Equip(cannon);
+
+            Assert.That(cannon.Stats.Damage, Is.EqualTo(20f).Within(Tolerance),
+                "Uma arma ganha no meio da run herda o que já foi acumulado.");
+        }
+
+        [Test]
+        public void Refuses_a_card_that_was_not_earned()
+        {
+            var arena = Make(Pistol);
+
+            Assert.Throws<System.InvalidOperationException>(
+                () => arena.Choose(new Upgrade("dano", StatKind.WeaponDamage, ModifierKind.Percent, 1f)));
+        }
     }
 }

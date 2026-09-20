@@ -9,15 +9,25 @@ namespace ScriptableSurvivors.Domain
     /// </summary>
     public sealed class Weapon
     {
-        public WeaponStats Stats { get; }
+        private StatModifiers modifiers;
+
+        /// <summary>Os números como vieram do catálogo. Nunca mudam.</summary>
+        public WeaponStats BaseStats { get; }
+
+        /// <summary>Os números em uso: a base com os upgrades da run somados.</summary>
+        public WeaponStats Stats => modifiers == null ? BaseStats : modifiers.ApplyTo(BaseStats);
+
         public float CooldownRemaining { get; private set; }
 
         public bool IsReady => CooldownRemaining <= 0f;
 
         public Weapon(WeaponStats stats)
         {
-            Stats = stats;
+            BaseStats = stats;
         }
+
+        /// <summary>Liga a arma à pilha de modificadores da run. A Arena faz isso ao equipar.</summary>
+        public void BindModifiers(StatModifiers runModifiers) => modifiers = runModifiers;
 
         public void Cool(float deltaTime)
         {
