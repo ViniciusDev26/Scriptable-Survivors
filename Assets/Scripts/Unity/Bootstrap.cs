@@ -118,9 +118,30 @@ namespace ScriptableSurvivors.Unity
 
         private void CreatePlayerBody(Player player)
         {
-            var body = RuntimePrimitives.Create(
-                PrimitiveType.Capsule, "Player", new Color(0.90f, 0.74f, 0.26f), primitiveMaterial);
-            body.transform.position = new Vector3(0f, 1f, 0f);
+            var usingModel = config.PlayerPrefab != null;
+
+            var body = usingModel
+                ? Instantiate(config.PlayerPrefab)
+                : RuntimePrimitives.Create(
+                    PrimitiveType.Capsule, "Player", new Color(0.90f, 0.74f, 0.26f), primitiveMaterial);
+
+            body.name = "Player";
+
+            // Cápsula tem pivô no centro e mede 2; modelo tem pivô nos pés.
+            body.transform.position = new Vector3(0f, usingModel ? 0f : 1f, 0f);
+
+            if (usingModel)
+            {
+                body.transform.localScale = Vector3.one * config.PlayerModelScale;
+
+                var clips = body.GetComponentInChildren<Animation>();
+                if (clips != null)
+                {
+                    body.AddComponent<PlayerAnimator>()
+                        .Bind(player, clips, config.PlayerWalkClip, config.PlayerIdleClip);
+                }
+            }
+
             body.AddComponent<PlayerView>().Bind(player);
         }
 

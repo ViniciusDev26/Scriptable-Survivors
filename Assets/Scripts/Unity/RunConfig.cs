@@ -25,6 +25,17 @@ namespace ScriptableSurvivors.Unity
         [SerializeField, Min(0.1f)] private float playerSpeed = 8f;
         [SerializeField, Min(1f)] private float playerMaxHealth = 100f;
 
+        [Tooltip("Vazio usa uma cápsula.")]
+        [SerializeField] private GameObject playerPrefab;
+
+        [SerializeField, Min(0.01f)] private float playerModelScale = 1f;
+
+        [Tooltip("Clipes tocados em loop. O jogador para, diferente dos inimigos, "
+               + "então precisa dos dois.")]
+        [SerializeField] private string playerWalkClip = "Walk";
+
+        [SerializeField] private string playerIdleClip = "Idle";
+
         [Header("Arsenal inicial")]
         [Tooltip("Todas disparam sozinhas, cada uma com sua própria cadência.")]
         [SerializeField] private WeaponData[] weapons;
@@ -78,6 +89,11 @@ namespace ScriptableSurvivors.Unity
         public float ContactRadius => contactRadius;
         public float HitRadius => hitRadius;
         public float SpawnRadius => spawnRadius;
+
+        public GameObject PlayerPrefab => playerPrefab;
+        public float PlayerModelScale => playerModelScale;
+        public string PlayerWalkClip => playerWalkClip;
+        public string PlayerIdleClip => playerIdleClip;
 
         public Player CreatePlayer() => new Player(playerSpeed, playerMaxHealth);
 
