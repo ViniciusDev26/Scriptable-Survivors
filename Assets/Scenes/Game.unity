@@ -461,29 +461,14 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 36cd5b683a31dc54d935d615421a37d0, type: 3}
   m_Name: 
   m_EditorClassIdentifier: ScriptableSurvivors.Unity::ScriptableSurvivors.Unity.Bootstrap
-  playerSpeed: 8
-  playerMaxHealth: 100
-  contactRadius: 1.2
+  config: {fileID: 11400000, guid: efb118d1a669cd30182a7f8edafd8cc7, type: 2}
+  primitiveMaterial: {fileID: 2100000, guid: 90917646d3135f34b9bc687085155729, type: 2}
+  projectileHeight: 1
+  groundRadius: 30
   cameraYaw: 45
   cameraPitch: 45
   cameraDistance: 25
   cameraSize: 10
-  primitiveMaterial: {fileID: 2100000, guid: 90917646d3135f34b9bc687085155729, type: 2}
-  arenaRadius: 30
-  weapons:
-  - {fileID: 11400000, guid: 155adf4ebe619856cacc8298bba81e28, type: 2}
-  - {fileID: 11400000, guid: 178253912eb48f2ad838c98f64cfb881, type: 2}
-  projectileHeight: 1
-  hitRadius: 0.8
-  upgradePool:
-  - {fileID: 11400000, guid: 90b84d607740db885af3c85d66af19fe, type: 2}
-  - {fileID: 11400000, guid: 56aebb5db3977630d83a7e8fe070bfee, type: 2}
-  - {fileID: 11400000, guid: 6309a814e384504f4aa21df4635cf770, type: 2}
-  enemyCatalog:
-  - {fileID: 11400000, guid: 1631283c288ad430a8f86a271c6cd025, type: 2}
-  spawnRadius: 25
-  spawnInterval: 1
-  randomSeed: 0
 --- !u!4 &1194842808
 Transform:
   m_ObjectHideFlags: 0
