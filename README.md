@@ -103,6 +103,15 @@ Sai em `Build/WebGL`, com Brotli e fallback de descompressão em JavaScript —
 o que permite hospedar em qualquer servidor estático, inclusive o GitHub Pages,
 que não manda `Content-Encoding: br`.
 
+## Contribuindo
+
+Fork, branch, e Pull Request explicando o que mudou e por quê. O passo a passo
+está em [`CONTRIBUTING.md`](CONTRIBUTING.md), e as convenções de código em
+[`CLAUDE.md`](CLAUDE.md).
+
+Conteúdo novo — um inimigo, uma arma, um upgrade — é um arquivo criado pelo
+menu do editor, não código. Contribuição sem programar é bem-vinda.
+
 ## Créditos
 
 Modelos: [Quaternius](https://quaternius.com) — *Ultimate Monsters Pack*, CC0 1.0.
