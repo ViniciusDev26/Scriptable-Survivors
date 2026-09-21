@@ -41,5 +41,22 @@ namespace ScriptableSurvivors.Domain.Enemies
         }
 
         public Health CreateHealth() => new Health(MaxHealth);
+
+        /// <summary>
+        /// O mesmo inimigo, mais forte. Vida e dano multiplicam; velocidade e
+        /// XP não.
+        ///
+        /// Velocidade escalada tornaria os rápidos impossíveis de evitar em
+        /// poucas ondas. E XP escalado anularia o freio natural: inimigo mais
+        /// duro demora mais para morrer, o que já reduz o ritmo de subir de
+        /// nível — que é exatamente o crescimento que precisa desacelerar.
+        /// </summary>
+        public EnemyStats Scaled(float multiplier)
+        {
+            if (multiplier <= 0f)
+                throw new ArgumentOutOfRangeException(nameof(multiplier), multiplier, "A força deve ser positiva.");
+
+            return new EnemyStats(MaxHealth * multiplier, Speed, Damage * multiplier, XpReward, Id);
+        }
     }
 }

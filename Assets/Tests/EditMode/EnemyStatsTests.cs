@@ -56,5 +56,51 @@ namespace ScriptableSurvivors.Tests
         {
             Assert.DoesNotThrow(() => new EnemyStats(10f, speed: 0f, damage: 0f, xpReward: 0));
         }
+
+        // ---------- escala por onda ----------
+
+        [Test]
+        public void A_scaled_enemy_is_tougher_and_hits_harder()
+        {
+            var scaled = new EnemyStats(20f, 1.5f, 7f, 4).Scaled(2f);
+
+            Assert.That(scaled.MaxHealth, Is.EqualTo(40f));
+            Assert.That(scaled.Damage, Is.EqualTo(14f));
+        }
+
+        [Test]
+        public void Scaling_never_touches_speed()
+        {
+            var scaled = new EnemyStats(20f, 1.5f, 7f, 4).Scaled(5f);
+
+            Assert.That(scaled.Speed, Is.EqualTo(1.5f),
+                "Velocidade escalada tornaria os rápidos impossíveis de evitar " +
+                "em poucas ondas.");
+        }
+
+        [Test]
+        public void Scaling_never_touches_xp()
+        {
+            var scaled = new EnemyStats(20f, 1.5f, 7f, 4).Scaled(5f);
+
+            Assert.That(scaled.XpReward, Is.EqualTo(4),
+                "Inimigo mais duro já demora mais para morrer, o que freia o " +
+                "ritmo de subir de nível. Escalar o XP anularia esse freio.");
+        }
+
+        [Test]
+        public void Scaling_keeps_the_catalog_identity()
+        {
+            var scaled = new EnemyStats(20f, 1.5f, 7f, 4, "brute").Scaled(3f);
+
+            Assert.That(scaled.Id, Is.EqualTo("brute"),
+                "É por este Id que o adaptador acha o prefab.");
+        }
+
+        [Test]
+        public void Refuses_a_scale_that_makes_no_enemy()
+        {
+            Assert.Throws<ArgumentOutOfRangeException>(() => new EnemyStats(20f, 1f, 1f, 1).Scaled(0f));
+        }
     }
 }

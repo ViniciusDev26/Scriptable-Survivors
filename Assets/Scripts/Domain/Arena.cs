@@ -163,7 +163,7 @@ namespace ScriptableSurvivors.Domain
             var due = Waves.Advance(deltaTime, enemies.Count);
             for (var i = 0; i < due; i++)
             {
-                var enemy = spawn.Create(Player.Position);
+                var enemy = spawn.Create(Player.Position, Waves.Strength);
                 Add(enemy);
                 EnemySpawned?.Invoke(enemy);
             }

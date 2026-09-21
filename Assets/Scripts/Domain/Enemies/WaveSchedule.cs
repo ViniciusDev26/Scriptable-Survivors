@@ -24,6 +24,7 @@ namespace ScriptableSurvivors.Domain.Enemies
         private readonly float waveDuration;
         private readonly float spawnWindow;
         private readonly float intermission;
+        private readonly float strengthGrowth;
 
         private SpawnTimer timer;
 
@@ -33,6 +34,17 @@ namespace ScriptableSurvivors.Domain.Enemies
         public int Size => firstWaveSize + ((Number - 1) * growth);
 
         public int Spawned { get; private set; }
+
+        /// <summary>
+        /// Multiplicador de vida e dano dos inimigos desta onda.
+        ///
+        /// Cresce de forma MULTIPLICATIVA, não somada, porque o poder do
+        /// jogador também é: dano e cadência se multiplicam entre si, e dez
+        /// upgrades de meia dúzia de porcentos viram dezenas de vezes mais
+        /// dano. Crescimento linear nunca alcançaria isso — e a run acabaria
+        /// naquele estado em que o inimigo nasce e morre no mesmo quadro.
+        /// </summary>
+        public float Strength => MathF.Pow(1f + strengthGrowth, Number - 1);
 
         /// <summary>Verdadeiro no respiro entre duas ondas.</summary>
         public bool IsResting { get; private set; }
@@ -45,7 +57,8 @@ namespace ScriptableSurvivors.Domain.Enemies
             int growth = 5,
             float waveDuration = 30f,
             float spawnWindow = 15f,
-            float intermission = 5f)
+            float intermission = 5f,
+            float strengthGrowth = 0.25f)
         {
             if (firstWaveSize <= 0)
                 throw new ArgumentOutOfRangeException(nameof(firstWaveSize), firstWaveSize, "A primeira onda precisa de inimigos.");
@@ -59,12 +72,15 @@ namespace ScriptableSurvivors.Domain.Enemies
                 throw new ArgumentException("A janela de nascimento não pode passar da duração da onda.", nameof(spawnWindow));
             if (intermission < 0f)
                 throw new ArgumentOutOfRangeException(nameof(intermission), intermission, "O respiro não pode ser negativo.");
+            if (strengthGrowth < 0f)
+                throw new ArgumentOutOfRangeException(nameof(strengthGrowth), strengthGrowth, "Os inimigos não podem enfraquecer.");
 
             this.firstWaveSize = firstWaveSize;
             this.growth = growth;
             this.waveDuration = waveDuration;
             this.spawnWindow = spawnWindow;
             this.intermission = intermission;
+            this.strengthGrowth = strengthGrowth;
 
             Begin(1);
         }

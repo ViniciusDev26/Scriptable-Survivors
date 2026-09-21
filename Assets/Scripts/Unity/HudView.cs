@@ -110,6 +110,10 @@ namespace ScriptableSurvivors.Unity
 
             text.Append("ONDA    ").Append(waves.Number)
                 .Append("   (").Append(seconds).Append("s)");
+
+            // Sem isto, o jogador sente o inimigo mais duro e não sabe por quê.
+            if (waves.Strength > 1.01f)
+                text.Append("   x").Append(waves.Strength.ToString("0.0"));
         }
 
         private void AppendBonuses()

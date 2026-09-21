@@ -188,5 +188,59 @@ namespace ScriptableSurvivors.Tests
             Assert.Throws<ArgumentException>(
                 () => new WaveSchedule(waveDuration: 10f, spawnWindow: 20f));
         }
+
+        // ---------- força da onda ----------
+
+        [Test]
+        public void The_first_wave_is_the_baseline()
+        {
+            Assert.That(Standard().Strength, Is.EqualTo(1f));
+        }
+
+        [Test]
+        public void Enemies_get_stronger_every_wave()
+        {
+            var waves = new WaveSchedule(strengthGrowth: 0.25f);
+
+            Run(waves, 31f);
+            Run(waves, 6f);
+
+            Assert.That(waves.Strength, Is.EqualTo(1.25f).Within(0.001f));
+        }
+
+        [Test]
+        public void Strength_compounds_instead_of_adding_up()
+        {
+            var waves = new WaveSchedule(strengthGrowth: 0.25f);
+
+            for (var i = 0; i < 4; i++)
+            {
+                Run(waves, 31f);
+                Run(waves, 6f);
+            }
+
+            Assume.That(waves.Number, Is.EqualTo(5));
+            Assert.That(waves.Strength, Is.EqualTo(2.441f).Within(0.01f),
+                "1,25 elevado a 4, não 1 + 4 x 0,25. O poder do jogador é " +
+                "multiplicativo — dano vezes cadência — e crescimento somado " +
+                "nunca alcançaria isso.");
+        }
+
+        [Test]
+        public void Growth_can_be_turned_off()
+        {
+            var waves = new WaveSchedule(strengthGrowth: 0f);
+
+            Run(waves, 31f);
+            Run(waves, 6f);
+
+            Assert.That(waves.Strength, Is.EqualTo(1f));
+        }
+
+        [Test]
+        public void Refuses_enemies_that_would_weaken()
+        {
+            Assert.Throws<ArgumentOutOfRangeException>(() => new WaveSchedule(strengthGrowth: -0.1f));
+        }
     }
 }

@@ -61,6 +61,12 @@ namespace ScriptableSurvivors.Unity
         [Tooltip("Respiro entre uma onda e a seguinte.")]
         [SerializeField, Min(0f)] private float waveIntermission = 5f;
 
+        [Tooltip("Quanto vida e dano dos inimigos crescem por onda. 0,25 é +25% "
+               + "COMPOSTO: a onda 5 vale 2,4x e a 10 vale 7,5x. Precisa ser "
+               + "composto porque o poder do jogador também é — dano vezes "
+               + "cadência. Zero desliga o crescimento.")]
+        [SerializeField, Min(0f)] private float waveStrengthGrowth = 0.25f;
+
         [Header("Progressão")]
         [Tooltip("O monte de cartas. Criar um upgrade novo é criar um asset e arrastar aqui.")]
         [SerializeField] private UpgradeData[] upgradePool;
@@ -100,7 +106,8 @@ namespace ScriptableSurvivors.Unity
         public Experience CreateExperience() => new Experience(firstLevelCost, costIncrease);
 
         public WaveSchedule CreateWaves() =>
-            new WaveSchedule(firstWaveSize, waveGrowth, waveDuration, spawnWindow, waveIntermission);
+            new WaveSchedule(firstWaveSize, waveGrowth, waveDuration, spawnWindow,
+                             waveIntermission, waveStrengthGrowth);
 
         /// <summary>
         /// A semente é anotada no Console para que uma run interessante possa

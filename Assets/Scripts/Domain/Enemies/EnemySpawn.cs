@@ -32,10 +32,10 @@ namespace ScriptableSurvivors.Domain.Enemies
             random = rng ?? throw new ArgumentNullException(nameof(rng));
         }
 
-        public Enemy Create(Vector2 center)
+        public Enemy Create(Vector2 center, float strength = 1f)
         {
             var stats = catalog[random.Next(catalog.Count)];
-            return new Enemy(stats, ring.NextPoint(center, random));
+            return new Enemy(stats.Scaled(strength), ring.NextPoint(center, random));
         }
     }
 }
