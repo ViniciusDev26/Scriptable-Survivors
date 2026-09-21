@@ -49,7 +49,7 @@ MonoBehaviour:
   - {fileID: 11400000, guid: 9db0b36e5dc145a190662bb8bca0c560, type: 2}
   - {fileID: 11400000, guid: 572f63922b844adc820e2ebd43369545, type: 2}
   firstLevelCost: 5
-  costIncrease: 3
+  costIncrease: 8
   contactRadius: 1.2
   hitRadius: 0.8
   randomSeed: 0
